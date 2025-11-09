@@ -124,7 +124,7 @@ export function OrganizationProvider({
 	if (isLoading) {
 		return (
 			<div className="flex h-full flex-col">
-				<div className="border-b bg-gradient-to-r from-background via-background to-muted/20">
+				<div className="border-b bg-linear-to-r from-background via-background to-muted/20">
 					<div className="flex flex-col justify-between gap-3 p-4 sm:flex-row sm:items-center sm:gap-0 sm:px-6 sm:py-6">
 						<div className="min-w-0 flex-1">
 							<div className="flex items-center gap-3 sm:gap-4">
@@ -151,7 +151,7 @@ export function OrganizationProvider({
 	if (requiresOrg && !activeOrganization) {
 		return (
 			<div className="flex h-full flex-col">
-				<div className="border-b bg-gradient-to-r from-background via-background to-muted/20">
+				<div className="border-b bg-linear-to-r from-background via-background to-muted/20">
 					<div className="flex flex-col justify-between gap-3 p-4 sm:flex-row sm:items-center sm:gap-0 sm:px-6 sm:py-6">
 						<div className="min-w-0 flex-1">
 							<div className="flex items-center gap-3 sm:gap-4">
@@ -222,7 +222,7 @@ export function OrganizationProvider({
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="h-22 border-b bg-gradient-to-r from-background via-background to-muted/20">
+			<div className="h-22 border-b bg-linear-to-r from-background via-background to-muted/20">
 				<div className="flex flex-col justify-between gap-2.5 p-3 sm:flex-row sm:items-center sm:gap-0 sm:px-5 sm:py-4">
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-2.5">

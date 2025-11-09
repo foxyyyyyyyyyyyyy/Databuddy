@@ -2,9 +2,10 @@
 
 import { authClient } from "@databuddy/auth/client";
 import { RocketLaunchIcon } from "@phosphor-icons/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import {
 	CreateWebsiteDialog,
 	type Domain,
@@ -29,14 +30,16 @@ export default function VercelConfigPage() {
 		data: projectsData,
 		isLoading: isLoadingProjects,
 		error: projectsError,
-	} = trpc.vercel.getProjects.useQuery(
-		{
-			limit: "20",
-			includeIntegrationStatus: true,
-			organizationId: activeOrganization?.id,
-		},
-		{ enabled: !isLoadingOrganization }
-	);
+	} = useQuery({
+		...orpc.vercel.getProjects.queryOptions({
+			input: {
+				limit: "20",
+				includeIntegrationStatus: true,
+				organizationId: activeOrganization?.id,
+			},
+		}),
+		enabled: !isLoadingOrganization,
+	});
 
 	const toggleProjectExpansion = (projectId: string) => {
 		setExpandedProjects((prev) => {
@@ -61,8 +64,10 @@ export default function VercelConfigPage() {
 		setIsDialogOpen(true);
 	};
 
-	const integrateWebsitesMutation = trpc.vercel.integrateWebsites.useMutation();
-	const utils = trpc.useUtils();
+	const queryClient = useQueryClient();
+	const integrateWebsitesMutation = useMutation({
+		...orpc.vercel.integrateWebsites.mutationOptions(),
+	});
 
 	const handleSaveWebsites = async (configs: any[]) => {
 		try {
@@ -80,7 +85,15 @@ export default function VercelConfigPage() {
 			});
 
 			if (result.success) {
-				await utils.vercel.getProjects.invalidate();
+				queryClient.invalidateQueries({
+					queryKey: orpc.vercel.getProjects.queryOptions({
+						input: {
+							limit: "20",
+							includeIntegrationStatus: true,
+							organizationId: activeOrganization?.id,
+						},
+					}).queryKey,
+				});
 				toast.success(
 					`Successfully integrated ${configs.length} website${configs.length > 1 ? "s" : ""}`
 				);
@@ -130,7 +143,7 @@ export default function VercelConfigPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background via-background to-muted/20">
+			<div className="border-b bg-linear-to-r from-background via-background to-muted/20">
 				<div className="flex h-24 items-center px-4 sm:px-6">
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-4">

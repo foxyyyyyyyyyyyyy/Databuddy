@@ -6,6 +6,7 @@ import {
 	PencilIcon,
 	TrashIcon,
 } from "@phosphor-icons/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -25,7 +26,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import type { Flag } from "./types";
 
 interface FlagActionsProps {
@@ -38,8 +39,10 @@ export function FlagActions({ flag, onEdit, onDeleted }: FlagActionsProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 
-	const utils = trpc.useUtils();
-	const deleteMutation = trpc.flags.delete.useMutation();
+	const queryClient = useQueryClient();
+	const deleteMutation = useMutation({
+		...orpc.flags.delete.mutationOptions(),
+	});
 
 	const handleCopyKey = async () => {
 		await navigator.clipboard.writeText(flag.key);
@@ -48,16 +51,18 @@ export function FlagActions({ flag, onEdit, onDeleted }: FlagActionsProps) {
 
 	const handleConfirmDelete = async () => {
 		setIsDeleting(true);
-		// optimistic removal
-		utils.flags.list.setData({ websiteId: flag.websiteId ?? "" }, (oldData) =>
-			oldData?.filter((f) => f.id !== flag.id)
+		const queryKey = orpc.flags.list.queryOptions({
+			input: { websiteId: flag.websiteId ?? "" },
+		}).queryKey;
+		queryClient.setQueryData(queryKey, (oldData: any) =>
+			oldData?.filter((f: any) => f.id !== flag.id)
 		);
 		try {
 			await deleteMutation.mutateAsync({ id: flag.id });
 			toast.success("Flag deleted");
 			onDeleted?.();
 		} catch (_error) {
-			utils.flags.list.invalidate();
+			queryClient.invalidateQueries({ queryKey });
 			toast.error("Failed to delete flag");
 		} finally {
 			setIsDeleting(false);

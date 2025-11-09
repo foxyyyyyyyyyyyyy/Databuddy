@@ -294,10 +294,12 @@ export function AddFilterForm({
 	addFilter,
 	buttonText = "Filter",
 	className,
+	disabled = false,
 }: {
 	addFilter: (filter: DynamicQueryFilter) => void;
 	buttonText?: string;
 	className?: string;
+	disabled?: boolean;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -308,13 +310,14 @@ export function AddFilterForm({
 	const autocompleteData = autocompleteQuery.data;
 
 	return (
-		<DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
+		<DropdownMenu disabled={disabled} onOpenChange={setIsOpen} open={isOpen}>
 			<DropdownMenuTrigger asChild>
 				<Button
 					aria-expanded={isOpen}
 					aria-haspopup="menu"
 					aria-label="Add filter"
 					className={className || "h-8"}
+					disabled={disabled}
 					onClick={() => setIsOpen(!isOpen)}
 					variant="outline"
 				>

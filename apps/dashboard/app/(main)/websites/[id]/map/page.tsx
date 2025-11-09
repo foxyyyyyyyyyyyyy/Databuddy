@@ -78,7 +78,7 @@ function CountryRow({
 			}}
 			type="button"
 		>
-			<div className="relative h-4 w-5 flex-shrink-0 overflow-hidden border border-border/20 shadow-sm">
+			<div className="relative h-4 w-5 shrink-0 overflow-hidden border border-border/20 shadow-sm">
 				<Image
 					alt={`${country.country} flag`}
 					className="object-cover"

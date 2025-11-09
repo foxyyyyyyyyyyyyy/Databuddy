@@ -1,10 +1,11 @@
 "use client";
 
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { usePersistentState } from "@/hooks/use-persistent-state";
 import { ANNOTATION_STORAGE_KEYS } from "@/lib/annotation-constants";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import type {
 	Annotation,
 	AnnotationFormData,
@@ -14,7 +15,7 @@ import type {
 import { EditAnnotationModal } from "./edit-annotation-modal";
 import { MetricsChart } from "./metrics-chart";
 
-interface MetricsChartWithAnnotationsProps {
+type MetricsChartWithAnnotationsProps = {
 	websiteId: string;
 	data: any[] | undefined;
 	isLoading: boolean;
@@ -22,15 +23,15 @@ interface MetricsChartWithAnnotationsProps {
 	title?: string;
 	description?: string;
 	className?: string;
-	metricsFilter?: (metric: any) => boolean;
+	metricsFilterAction?: (metric: any) => boolean;
 	showLegend?: boolean;
-	onRangeSelect?: (dateRange: { startDate: Date; endDate: Date }) => void;
+	onRangeSelectAction?: (dateRange: { startDate: Date; endDate: Date }) => void;
 	dateRange?: {
 		startDate: Date;
 		endDate: Date;
 		granularity: "hourly" | "daily" | "weekly" | "monthly";
 	};
-}
+};
 
 export function MetricsChartWithAnnotations({
 	websiteId,
@@ -40,9 +41,9 @@ export function MetricsChartWithAnnotations({
 	title,
 	description,
 	className,
-	metricsFilter,
+	metricsFilterAction,
 	showLegend = true,
-	onRangeSelect,
+	onRangeSelectAction,
 	dateRange,
 }: MetricsChartWithAnnotationsProps) {
 	const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(
@@ -54,12 +55,20 @@ export function MetricsChartWithAnnotations({
 		true
 	);
 
-	const createAnnotation = trpc.annotations.create.useMutation();
-	const updateAnnotation = trpc.annotations.update.useMutation();
-	const deleteAnnotation = trpc.annotations.delete.useMutation();
+	const createAnnotation = useMutation({
+		...orpc.annotations.create.mutationOptions(),
+	});
+	const updateAnnotation = useMutation({
+		...orpc.annotations.update.mutationOptions(),
+	});
+	const deleteAnnotation = useMutation({
+		...orpc.annotations.delete.mutationOptions(),
+	});
 
 	const chartContext = useMemo((): ChartContext | null => {
-		if (!(dateRange && data?.length)) return null;
+		if (!(dateRange && data?.length)) {
+			return null;
+		}
 
 		return {
 			dateRange: {
@@ -71,20 +80,21 @@ export function MetricsChartWithAnnotations({
 		};
 	}, [dateRange, data]);
 
-	const { data: allAnnotations, refetch: refetchAnnotations } =
-		trpc.annotations.list.useQuery(
-			{
+	const { data: allAnnotations, refetch: refetchAnnotations } = useQuery({
+		...orpc.annotations.list.queryOptions({
+			input: {
 				websiteId,
 				chartType: "metrics" as const,
 				chartContext: chartContext!,
 			},
-			{
-				enabled: !!websiteId && !!chartContext,
-			}
-		);
+		}),
+		enabled: !!websiteId && !!chartContext,
+	});
 
 	const annotations = useMemo(() => {
-		if (!(allAnnotations && dateRange)) return [];
+		if (!(allAnnotations && dateRange)) {
+			return [];
+		}
 
 		const { startDate, endDate } = dateRange;
 
@@ -206,11 +216,11 @@ export function MetricsChartWithAnnotations({
 				granularity={dateRange?.granularity}
 				height={height}
 				isLoading={isLoading}
-				metricsFilter={metricsFilter}
+				metricsFilterAction={metricsFilterAction}
 				onCreateAnnotation={handleCreateAnnotation}
 				onDeleteAnnotation={handleDeleteAnnotation}
 				onEditAnnotation={handleEditAnnotation}
-				onRangeSelect={onRangeSelect}
+				onRangeSelectAction={onRangeSelectAction}
 				onToggleAnnotations={setShowAnnotations}
 				showAnnotations={showAnnotations}
 				showLegend={showLegend}

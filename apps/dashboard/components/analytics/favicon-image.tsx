@@ -4,13 +4,13 @@ import { GlobeIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 import { useState } from "react";
 
-interface FaviconImageProps {
+type FaviconImageProps = {
 	domain: string;
 	altText?: string;
 	size?: number;
 	className?: string;
 	fallbackIcon?: React.ReactNode;
-}
+};
 
 const hostnameRegex = /^https?:\/\//;
 const wwwRegex = /^www\./;

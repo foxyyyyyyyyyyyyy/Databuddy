@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface SkeletonChartProps {
+type SkeletonChartProps = {
 	height?: number;
 	title?: string;
 	className?: string;
-}
+};
 
 export function SkeletonChart({
 	height = 300,
@@ -21,7 +21,7 @@ export function SkeletonChart({
 }: SkeletonChartProps) {
 	return (
 		<Card
-			className={`border-0 bg-gradient-to-br from-background to-muted/20 shadow-lg ${className}`}
+			className={`border-0 bg-linear-to-br from-background to-muted/20 shadow-lg ${className}`}
 		>
 			<CardHeader className="px-3 pt-3 pb-0.5">
 				{title ? (
@@ -51,7 +51,7 @@ export function SkeletonChart({
 					<div className="absolute right-0 bottom-12 left-0 flex items-end justify-between px-4">
 						{Array.from({ length: 7 }).map((_, i) => (
 							<div
-								className="animate-pulse rounded-t-md bg-gradient-to-t from-primary/10 to-primary/30 shadow-sm"
+								className="animate-pulse rounded-t-md bg-linear-to-t from-primary/10 to-primary/30 shadow-sm"
 								key={`skeleton-${i + 1}`}
 								style={{
 									width: "12%",

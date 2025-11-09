@@ -23,18 +23,18 @@ const GeoJSON = dynamic(
 	{ ssr: false }
 );
 
-interface TooltipContent {
+type TooltipContent = {
 	name: string;
 	code: string;
 	count: number;
 	percentage: number;
 	perCapita?: number;
-}
+};
 
-interface TooltipPosition {
+type TooltipPosition = {
 	x: number;
 	y: number;
-}
+};
 
 const roundToTwo = (num: number): number =>
 	Math.round((num + Number.EPSILON) * 100) / 100;
@@ -42,7 +42,9 @@ const roundToTwo = (num: number): number =>
 const mapApiToGeoJson = (code: string): string =>
 	code === "TW" ? "CN-TW" : code;
 const mapGeoJsonToApi = (code: string): string => {
-	if (!code) return code;
+	if (!code) {
+		return code;
+	}
 	const upperCode = code.toUpperCase();
 	return upperCode === "CN-TW" ? "TW" : code;
 };
@@ -54,7 +56,7 @@ export function MapComponent({
 	isLoading: passedIsLoading = false,
 	selectedCountry,
 }: {
-	height: string;
+	height: number | string;
 	mode?: "total" | "perCapita";
 	locationData?: LocationData;
 	isLoading?: boolean;
@@ -328,20 +330,6 @@ export function MapComponent({
 	);
 
 	const containerRef = useRef<HTMLDivElement>(null);
-	const [_resolvedHeight, setResolvedHeight] = useState<number>(0);
-
-	useEffect(() => {
-		const updateHeight = () => {
-			if (containerRef.current) {
-				setResolvedHeight(containerRef.current.clientHeight);
-			}
-		};
-
-		updateHeight();
-		window.addEventListener("resize", updateHeight);
-		return () => window.removeEventListener("resize", updateHeight);
-	}, []);
-
 	const zoom = 1.5;
 
 	useEffect(() => {

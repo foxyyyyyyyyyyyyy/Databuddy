@@ -146,14 +146,11 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 				onClick={() => toggleAccordion(title, true)}
 				type="button"
 			>
-				<Icon
-					className="size-5 flex-shrink-0 text-sidebar-ring"
-					weight="fill"
-				/>
+				<Icon className="size-5 shrink-0 text-sidebar-ring" weight="fill" />
 				<span className="flex-1 text-sm">{title}</span>
 				<motion.div
 					animate={{ rotate: isExpanded ? 180 : 0 }}
-					className="flex-shrink-0"
+					className="shrink-0"
 					transition={{ duration: 0.2 }}
 				>
 					<CaretDownIcon

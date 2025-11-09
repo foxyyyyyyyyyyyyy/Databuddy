@@ -12,8 +12,6 @@
     "@databuddy/shared": "workspace:*",
     "@databuddy/validation": "workspace:*",
     "@logtail/edge": "catalog:",
-    "@trpc/react-query": "catalog:",
-    "@trpc/server": "catalog:",
     "autumn-js": "catalog:",
     "drizzle-orm": "^0.44.7",
     "effect": "^3.17.14",

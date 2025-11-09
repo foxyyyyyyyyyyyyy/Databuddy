@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/performance/noBarrelFile: we like barrels */
+
 export { DateDisplay } from "./date-display";
 export { DeviceTypeCell } from "./device-type-cell";
 export { EventLimitIndicator } from "./event-limit-indicator";

@@ -28,27 +28,38 @@ const COLORS = [
 	"#ec4899", // Pink
 ];
 
-interface ChartDataItem {
+type ChartDataItem = {
 	name: string;
 	value: number;
 	color?: string;
-}
+};
 
-interface DistributionChartProps {
+type DistributionChartProps = {
 	data: ChartDataItem[] | undefined;
 	isLoading: boolean;
 	title: string;
 	description?: string;
 	height?: number;
-}
+};
 
-// Simple tooltip
-const CustomTooltip = ({ active, payload }: any) => {
-	if (!(active && payload && payload.length)) {
+type CustomTooltipProps = {
+	active: boolean;
+	payload: Array<{
+		name: string;
+		value: number;
+		percent: number;
+	}>;
+};
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+	if (!(active && payload?.length)) {
 		return null;
 	}
 
-	const data = payload[0];
+	const data = payload[0] as {
+		name: string;
+		value: number;
+		percent: number;
+	};
 	return (
 		<div className="rounded-md border border-border bg-background p-2 text-xs shadow-md">
 			<p className="font-semibold">{data.name}</p>
@@ -56,11 +67,11 @@ const CustomTooltip = ({ active, payload }: any) => {
 				<span className="text-muted-foreground">Count: </span>
 				<span className="font-medium">{data.value.toLocaleString()}</span>
 			</p>
-			{data.payload.percent && (
+			{data.percent && (
 				<p>
 					<span className="text-muted-foreground">Percentage: </span>
 					<span className="font-medium">
-						{(data.payload.percent * 100).toFixed(1)}%
+						{(data.percent * 100).toFixed(1)}%
 					</span>
 				</p>
 			)}
@@ -161,7 +172,7 @@ export function DistributionChart({
 					<CardDescription className="text-xs">{description}</CardDescription>
 				)}
 			</CardHeader>
-			<CardContent className="px-0 pt-0 pb-4">
+			<CardContent className="px-0 pt-0 pb-4">	
 				<div style={{ width: "100%", height: height - 50 }}>
 					<ResponsiveContainer height="100%" width="100%">
 						<PieChart>
@@ -188,7 +199,18 @@ export function DistributionChart({
 								))}
 							</Pie>
 							<Tooltip
-								content={<CustomTooltip />}
+								content={
+									<CustomTooltip
+										active={activeIndex !== -1}
+										payload={
+											chartData as Array<{
+												name: string;
+												value: number;
+												percent: number;
+											}>
+										}
+									/>
+								}
 								wrapperStyle={{ outline: "none" }}
 							/>
 							<Legend

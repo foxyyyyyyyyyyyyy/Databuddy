@@ -24,7 +24,7 @@ export const Navbar = ({ stars }: NavbarProps) => {
 				<div className="mx-auto w-full px-2 sm:px-2 md:px-6 lg:px-8">
 					<div className="flex h-16 items-center justify-between">
 						{/* Logo Section */}
-						<div className="flex-shrink-0">
+						<div className="shrink-0">
 							<Logo />
 						</div>
 
@@ -150,7 +150,7 @@ export const Navbar = ({ stars }: NavbarProps) => {
 							target="_blank"
 						>
 							<svg
-								className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
+								className="shrink-0 transition-transform duration-200 group-hover:scale-110"
 								height="1.2em"
 								viewBox="0 0 496 512"
 								width="1.2em"

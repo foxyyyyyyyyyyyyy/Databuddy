@@ -94,12 +94,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 	);
 };
 
-interface DateRangeState {
+type DateRangeState = {
 	startDate: Date;
 	endDate: Date;
-}
+};
 
-interface MetricsChartProps {
+type MetricsChartProps = {
 	data: ChartDataRow[] | undefined;
 	isLoading: boolean;
 	height?: number;
@@ -125,7 +125,7 @@ interface MetricsChartProps {
 	onToggleAnnotations?: (show: boolean) => void;
 	websiteId?: string;
 	granularity?: "hourly" | "daily" | "weekly" | "monthly";
-}
+};
 
 export function MetricsChart({
 	data,
@@ -150,7 +150,6 @@ export function MetricsChart({
 	const [refAreaLeft, setRefAreaLeft] = useState<string | null>(null);
 	const [refAreaRight, setRefAreaRight] = useState<string | null>(null);
 	const [showRangePopup, setShowRangePopup] = useState(false);
-	const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 	const [selectedDateRange, setSelectedDateRange] =
 		useState<DateRangeState | null>(null);
 
@@ -201,17 +200,24 @@ export function MetricsChart({
 	});
 
 	const handleMouseDown = (e: any) => {
-		if (!e?.activeLabel) return;
+		if (!e?.activeLabel) {
+			return;
+		}
 		setRefAreaLeft(e.activeLabel);
 		setRefAreaRight(null);
 	};
 
 	const handleMouseMove = (e: any) => {
-		if (!(refAreaLeft && e?.activeLabel)) return;
+		if (!(refAreaLeft && e?.activeLabel)) {
+			return;
+		}
 		setRefAreaRight(e.activeLabel);
 	};
 
 	const handleMouseUp = (e: any) => {
+		if (!e?.activeLabel) {
+			return;
+		}
 		if (!refAreaLeft) {
 			setRefAreaLeft(null);
 			setRefAreaRight(null);
@@ -308,7 +314,7 @@ export function MetricsChart({
 								strokeWidth={1.5}
 								weight="duotone"
 							/>
-							<div className="absolute inset-0 rounded-full bg-gradient-to-t from-sidebar-ring/10 to-transparent blur-xl" />
+							<div className="absolute inset-0 rounded-full bg-linear-to-br from-sidebar-ring/10 to-transparent blur-xl" />
 						</div>
 						<p className="mt-6 font-semibold text-lg text-sidebar-foreground">
 							No data available
@@ -385,6 +391,7 @@ export function MetricsChart({
 									aria-label="Dismiss tip"
 									className="text-sidebar-foreground/70 transition-colors hover:text-sidebar-foreground"
 									onClick={() => setTipDismissed(true)}
+									type="button"
 								>
 									<XIcon size={12} />
 								</button>
@@ -614,9 +621,9 @@ export function MetricsChart({
 				<RangeSelectionPopup
 					dateRange={selectedDateRange}
 					isOpen={showRangePopup} // Position is handled by modal overlay
-					onClose={() => setShowRangePopup(false)}
-					onCreateAnnotation={handleCreateAnnotation}
-					onZoom={handleZoom}
+					onCloseAction={() => setShowRangePopup(false)}
+					onCreateAnnotationAction={handleCreateAnnotation}
+					onZoomAction={handleZoom}
 					position={{ x: 0, y: 0 }}
 				/>
 			)}

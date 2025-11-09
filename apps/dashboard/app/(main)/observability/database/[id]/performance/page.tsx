@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMetricNumber } from "@/lib/formatters";
-import { trpc } from "@/lib/trpc";
 import {
 	ResourceConsumptionChart,
 	ResponseTimeChart,
@@ -39,7 +38,7 @@ interface PerformancePageProps {
 function LoadingState() {
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded border border-primary/20 bg-primary/10 p-3">
 						<ChartLineIcon className="h-6 w-6 text-primary" weight="duotone" />
@@ -95,7 +94,7 @@ function LoadingState() {
 function ExtensionNotEnabledState({ connectionId }: { connectionId: string }) {
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded border border-primary/20 bg-primary/10 p-3">
 						<ChartLineIcon className="h-6 w-6 text-primary" weight="duotone" />
@@ -154,7 +153,7 @@ function ResetStatsDialog({
 	connectionId: string;
 	onSuccess: () => void;
 }) {
-	const resetMutation = trpc.performance.resetStats.useMutation({
+	const resetMutation = orpc.performance.resetStats.useMutation({
 		onSuccess: () => {
 			onSuccess();
 			onOpenChange(false);
@@ -277,18 +276,18 @@ export default function PerformancePage({ params }: PerformancePageProps) {
 	const resolvedParams = use(params);
 	const connectionId = resolvedParams.id;
 
-	const utils = trpc.useUtils();
+	const utils = orpc.useUtils();
 
 	const { data: extensionStatus, isLoading: extensionLoading } =
-		trpc.performance.checkExtensionStatus.useQuery({ id: connectionId });
+		orpc.performance.checkExtensionStatus.useQuery({ id: connectionId });
 
 	const { data: metrics, isLoading: metricsLoading } =
-		trpc.performance.getMetrics.useQuery(
+		orpc.performance.getMetrics.useQuery(
 			{ id: connectionId },
 			{ enabled: extensionStatus?.enabled === true }
 		);
 
-	const { data: userInfo } = trpc.performance.getUserInfo.useQuery(
+	const { data: userInfo } = orpc.performance.getUserInfo.useQuery(
 		{ id: connectionId },
 		{ enabled: extensionStatus?.enabled === true }
 	);
@@ -367,7 +366,7 @@ export default function PerformancePage({ params }: PerformancePageProps) {
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded border border-primary/20 bg-primary/10 p-3">
 						<ChartLineIcon className="h-6 w-6 text-primary" weight="duotone" />

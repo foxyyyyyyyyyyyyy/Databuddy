@@ -176,7 +176,7 @@ export const TechnologyIcon = ({
 
 		return (
 			<div
-				className="relative flex-shrink-0"
+				className="relative shrink-0"
 				style={{ width: iconSize, height: iconSize }}
 			>
 				<Image

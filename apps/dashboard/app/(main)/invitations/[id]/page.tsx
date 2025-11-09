@@ -179,7 +179,7 @@ export default function AcceptInvitationPage() {
 						</div>
 
 						<div className="mb-8 space-y-4">
-							<h3 className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text font-bold text-2xl text-transparent">
+							<h3 className="bg-linear-to-r from-foreground to-foreground/70 bg-clip-text font-bold text-2xl text-transparent">
 								You're Invited!
 							</h3>
 							<p className="max-w-md text-lg text-muted-foreground leading-relaxed">
@@ -298,7 +298,7 @@ export default function AcceptInvitationPage() {
 						</div>
 
 						<div className="mb-8 space-y-4">
-							<h3 className="bg-gradient-to-r from-green-600 to-green-500 bg-clip-text font-bold text-2xl text-transparent">
+							<h3 className="bg-linear-to-r from-green-600 to-green-500 bg-clip-text font-bold text-2xl text-transparent">
 								Welcome Aboard!
 							</h3>
 							<p className="text-lg text-muted-foreground leading-relaxed">

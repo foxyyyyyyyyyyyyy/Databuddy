@@ -11,12 +11,12 @@ import {
 	isNull,
 	sql,
 } from "@databuddy/db";
-import { TRPCError } from "@trpc/server";
+import { ORPCError } from "@orpc/server";
 import { customAlphabet, nanoid } from "nanoid";
 import { z } from "zod";
 import { logger } from "../lib/logger";
-import type { Context } from "../trpc";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import type { Context } from "../orpc";
+import { protectedProcedure } from "../orpc";
 
 type ApiScope = InferSelectModel<typeof apikey>["scopes"][number];
 
@@ -135,7 +135,7 @@ const hashSecretScrypt = (secret: string) => {
 };
 
 async function assertOrgPermission(
-	ctx: Context,
+	ctx: Context & { user: NonNullable<Context["user"]> },
 	requiredScopes: string[] = []
 ) {
 	if (ctx.user.role === "ADMIN") {
@@ -146,7 +146,6 @@ async function assertOrgPermission(
 		return;
 	}
 
-	// Check if user has organization-level permissions
 	const { success } = await websitesApi.hasPermission({
 		headers: ctx.headers,
 		body: { permissions: { website: ["configure"] } },
@@ -158,8 +157,7 @@ async function assertOrgPermission(
 			requiredScopes,
 			reason: "User lacks organization-level configure permission",
 		});
-		throw new TRPCError({
-			code: "FORBIDDEN",
+		throw new ORPCError("FORBIDDEN", {
 			message:
 				"Missing organization permissions. You need configure access to manage organization API keys.",
 		});
@@ -172,7 +170,10 @@ async function assertOrgPermission(
 	});
 }
 
-function assertUserOwnershipOrAdmin(ctx: Context, userId: string | null) {
+function assertUserOwnershipOrAdmin(
+	ctx: Context & { user: NonNullable<Context["user"]> },
+	userId: string | null
+) {
 	if (ctx.user.role === "ADMIN") {
 		logger.info("User ownership check bypassed via admin role", {
 			adminUserId: ctx.user.id,
@@ -186,8 +187,7 @@ function assertUserOwnershipOrAdmin(ctx: Context, userId: string | null) {
 			targetUserId: userId,
 			reason: userId ? "Ownership mismatch" : "No user ID provided",
 		});
-		throw new TRPCError({
-			code: "FORBIDDEN",
+		throw new ORPCError("FORBIDDEN", {
 			message: "Not authorized. You can only manage your own API keys.",
 		});
 	}
@@ -199,7 +199,7 @@ function assertUserOwnershipOrAdmin(ctx: Context, userId: string | null) {
 }
 
 async function assertCanManageKey(
-	ctx: Context,
+	ctx: Context & { user: NonNullable<Context["user"]> },
 	key: InferSelectModel<typeof apikey>
 ) {
 	if (key.organizationId) {
@@ -224,31 +224,34 @@ async function assertCanManageKey(
 	});
 }
 
-async function fetchKeyOrThrow(ctx: Context, id: string) {
+async function fetchKeyOrThrow(
+	ctx: Context & { user: NonNullable<Context["user"]> },
+	id: string
+) {
 	const existing = await ctx.db.query.apikey.findFirst({
 		where: eq(apikey.id, id),
 	});
 	if (!existing) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "API key not found" });
+		throw new ORPCError("NOT_FOUND", { message: "API key not found" });
 	}
 	return existing;
 }
 
-export const apikeysRouter = createTRPCRouter({
+export const apikeysRouter = {
 	list: protectedProcedure
 		.input(z.object({ organizationId: z.string().optional() }).default({}))
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			try {
-				const rows = await ctx.db
+				const rows = await context.db
 					.select()
 					.from(apikey)
 					.where(
 						input.organizationId
 							? eq(apikey.organizationId, input.organizationId)
 							: and(
-									eq(apikey.userId, ctx.user.id),
-									isNull(apikey.organizationId)
-								)
+								eq(apikey.userId, context.user.id),
+								isNull(apikey.organizationId)
+							)
 					)
 					.orderBy(desc(apikey.createdAt));
 
@@ -272,11 +275,10 @@ export const apikeysRouter = createTRPCRouter({
 			} catch (error: unknown) {
 				logger.error("Failed to list API keys", {
 					error: error instanceof Error ? error : new Error(String(error)),
-					userId: ctx.user.id,
+					userId: context.user.id,
 					organizationId: input.organizationId,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to list API keys",
 				});
 			}
@@ -284,20 +286,19 @@ export const apikeysRouter = createTRPCRouter({
 
 	getById: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			try {
-				const key = await ctx.db.query.apikey.findFirst({
+				const key = await context.db.query.apikey.findFirst({
 					where: eq(apikey.id, input.id),
 				});
 				if (!key) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
+					throw new ORPCError("NOT_FOUND", {
 						message: "API key not found",
 					});
 				}
-				await assertCanManageKey(ctx, key);
+				await assertCanManageKey(context, key);
 
-				const access = await ctx.db
+				const access = await context.db
 					.select()
 					.from(apikeyAccess)
 					.where(eq(apikeyAccess.apikeyId, input.id));
@@ -321,16 +322,15 @@ export const apikeysRouter = createTRPCRouter({
 					access,
 				};
 			} catch (error) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 				logger.error("Failed to fetch API key", {
 					error: error instanceof Error ? error.message : String(error),
 					id: input.id,
-					userId: ctx.user.id,
+					userId: context.user.id,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to fetch API key",
 				});
 			}
@@ -338,13 +338,13 @@ export const apikeysRouter = createTRPCRouter({
 
 	create: protectedProcedure
 		.input(createApiKeySchema)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const nowIso = new Date();
 			const { secret, prefix, start } = generateKeyMaterial();
 			const keyHash = hashSecretScrypt(secret);
 
 			try {
-				const [created] = await ctx.db
+				const [created] = await context.db
 					.insert(apikey)
 					.values({
 						id: nanoid(),
@@ -353,7 +353,7 @@ export const apikeysRouter = createTRPCRouter({
 						start,
 						key: secret,
 						keyHash,
-						userId: input.organizationId ? null : ctx.user.id,
+						userId: input.organizationId ? null : context.user.id,
 						organizationId: input.organizationId ?? null,
 						type: input.type ?? "user",
 						scopes: input.globalScopes,
@@ -379,12 +379,12 @@ export const apikeysRouter = createTRPCRouter({
 							createdAt: nowIso,
 							updatedAt: nowIso,
 						}));
-					await ctx.db.insert(apikeyAccess).values(accessRows);
+					await context.db.insert(apikeyAccess).values(accessRows);
 				}
 
 				logger.info("API key created", {
 					apikeyId: created.id,
-					userId: ctx.user.id,
+					userId: context.user.id,
 					organizationId: input.organizationId,
 				});
 
@@ -397,11 +397,10 @@ export const apikeysRouter = createTRPCRouter({
 			} catch (error) {
 				logger.error("Failed to create API key", {
 					error: error instanceof Error ? error.message : String(error),
-					userId: ctx.user.id,
+					userId: context.user.id,
 					organizationId: input.organizationId,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to create API key",
 				});
 			}
@@ -409,19 +408,18 @@ export const apikeysRouter = createTRPCRouter({
 
 	update: protectedProcedure
 		.input(updateApiKeySchema)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			try {
-				const key = await ctx.db.query.apikey.findFirst({
+				const key = await context.db.query.apikey.findFirst({
 					where: eq(apikey.id, input.id),
 				});
 				if (!key) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
+					throw new ORPCError("NOT_FOUND", {
 						message: "API key not found",
 					});
 				}
-				await assertCanManageKey(ctx, key);
-				const [updated] = await ctx.db
+				await assertCanManageKey(context, key);
+				const [updated] = await context.db
 					.update(apikey)
 					.set({
 						name: input.name ?? key.name,
@@ -442,16 +440,15 @@ export const apikeysRouter = createTRPCRouter({
 
 				return updated;
 			} catch (error) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 				logger.error("Failed to update API key", {
 					error: error instanceof Error ? error.message : String(error),
 					id: input.id,
-					userId: ctx.user.id,
+					userId: context.user.id,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to update API key",
 				});
 			}
@@ -459,19 +456,18 @@ export const apikeysRouter = createTRPCRouter({
 
 	revoke: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			try {
-				const key = await ctx.db.query.apikey.findFirst({
+				const key = await context.db.query.apikey.findFirst({
 					where: eq(apikey.id, input.id),
 				});
 				if (!key) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
+					throw new ORPCError("NOT_FOUND", {
 						message: "API key not found",
 					});
 				}
-				await assertCanManageKey(ctx, key);
-				await ctx.db
+				await assertCanManageKey(context, key);
+				await context.db
 					.update(apikey)
 					.set({
 						enabled: false,
@@ -481,16 +477,15 @@ export const apikeysRouter = createTRPCRouter({
 					.where(eq(apikey.id, input.id));
 				return { success: true };
 			} catch (error) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 				logger.error("Failed to revoke API key", {
 					error: error instanceof Error ? error.message : String(error),
 					id: input.id,
-					userId: ctx.user.id,
+					userId: context.user.id,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to revoke API key",
 				});
 			}
@@ -498,21 +493,20 @@ export const apikeysRouter = createTRPCRouter({
 
 	rotate: protectedProcedure
 		.input(rotateApiKeySchema)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const { secret, prefix, start } = generateKeyMaterial();
 			const keyHash = hashSecretScrypt(secret);
 			try {
-				const key = await ctx.db.query.apikey.findFirst({
+				const key = await context.db.query.apikey.findFirst({
 					where: eq(apikey.id, input.id),
 				});
 				if (!key) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
+					throw new ORPCError("NOT_FOUND", {
 						message: "API key not found",
 					});
 				}
-				await assertCanManageKey(ctx, key);
-				const [updated] = await ctx.db
+				await assertCanManageKey(context, key);
+				const [updated] = await context.db
 					.update(apikey)
 					.set({
 						prefix,
@@ -526,7 +520,7 @@ export const apikeysRouter = createTRPCRouter({
 
 				logger.info("API key rotated", {
 					apikeyId: updated.id,
-					userId: ctx.user.id,
+					userId: context.user.id,
 				});
 				return {
 					id: updated.id,
@@ -535,16 +529,15 @@ export const apikeysRouter = createTRPCRouter({
 					start: updated.start,
 				};
 			} catch (error) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 				logger.error("Failed to rotate API key", {
 					error: error instanceof Error ? error.message : String(error),
 					id: input.id,
-					userId: ctx.user.id,
+					userId: context.user.id,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to rotate API key",
 				});
 			}
@@ -552,12 +545,12 @@ export const apikeysRouter = createTRPCRouter({
 
 	setAccessList: protectedProcedure
 		.input(setAccessListSchema)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			try {
-				const key = await fetchKeyOrThrow(ctx, input.apikeyId);
-				await assertCanManageKey(ctx, key);
+				const key = await fetchKeyOrThrow(context, input.apikeyId);
+				await assertCanManageKey(context, key);
 
-				await ctx.db.transaction(async (tx) => {
+				await context.db.transaction(async (tx) => {
 					await tx
 						.delete(apikeyAccess)
 						.where(eq(apikeyAccess.apikeyId, input.apikeyId));
@@ -578,15 +571,14 @@ export const apikeysRouter = createTRPCRouter({
 				});
 				return { success: true };
 			} catch (error) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 				logger.error("Failed to set access list", {
 					error: error instanceof Error ? error.message : String(error),
 					apikeyId: input.apikeyId,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to set access list",
 				});
 			}
@@ -594,12 +586,12 @@ export const apikeysRouter = createTRPCRouter({
 
 	addOrUpdateAccess: protectedProcedure
 		.input(addOrUpdateAccessSchema)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			try {
-				const key = await fetchKeyOrThrow(ctx, input.apikeyId);
-				await assertCanManageKey(ctx, key);
+				const key = await fetchKeyOrThrow(context, input.apikeyId);
+				await assertCanManageKey(context, key);
 				const now = new Date();
-				const [row] = await ctx.db
+				const [row] = await context.db
 					.insert(apikeyAccess)
 					.values({
 						id: nanoid(),
@@ -621,7 +613,7 @@ export const apikeysRouter = createTRPCRouter({
 					.returning();
 				return row;
 			} catch (error) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 				logger.error("Failed to upsert access entry", {
@@ -630,8 +622,7 @@ export const apikeysRouter = createTRPCRouter({
 					resourceType: input.resourceType,
 					resourceId: input.resourceId ?? null,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to upsert access entry",
 				});
 			}
@@ -639,11 +630,11 @@ export const apikeysRouter = createTRPCRouter({
 
 	removeAccess: protectedProcedure
 		.input(removeAccessSchema)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			try {
-				const key = await fetchKeyOrThrow(ctx, input.apikeyId);
-				await assertCanManageKey(ctx, key);
-				await ctx.db
+				const key = await fetchKeyOrThrow(context, input.apikeyId);
+				await assertCanManageKey(context, key);
+				await context.db
 					.delete(apikeyAccess)
 					.where(
 						and(
@@ -656,7 +647,7 @@ export const apikeysRouter = createTRPCRouter({
 					);
 				return { success: true };
 			} catch (error) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 				logger.error("Failed to remove access entry", {
@@ -665,8 +656,7 @@ export const apikeysRouter = createTRPCRouter({
 					resourceType: input.resourceType,
 					resourceId: input.resourceId ?? null,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to remove access entry",
 				});
 			}
@@ -674,22 +664,21 @@ export const apikeysRouter = createTRPCRouter({
 
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			try {
-				const key = await fetchKeyOrThrow(ctx, input.id);
-				await assertCanManageKey(ctx, key);
-				await ctx.db.delete(apikey).where(eq(apikey.id, input.id));
+				const key = await fetchKeyOrThrow(context, input.id);
+				await assertCanManageKey(context, key);
+				await context.db.delete(apikey).where(eq(apikey.id, input.id));
 				return { success: true };
 			} catch (error) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 				logger.error("Failed to delete API key", {
 					error: error instanceof Error ? error.message : String(error),
 					id: input.id,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to delete API key",
 				});
 			}
@@ -697,15 +686,15 @@ export const apikeysRouter = createTRPCRouter({
 
 	resolveAccess: protectedProcedure
 		.input(resolveAccessSchema)
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			try {
-				const key = await fetchKeyOrThrow(ctx, input.apikeyId);
+				const key = await fetchKeyOrThrow(context, input.apikeyId);
 				if (!key.enabled || key.revokedAt != null) {
 					return { enabled: false, scopes: [] as ApiScope[] };
 				}
-				await assertCanManageKey(ctx, key);
+				await assertCanManageKey(context, key);
 
-				const entries = await ctx.db
+				const entries = await context.db
 					.select()
 					.from(apikeyAccess)
 					.where(eq(apikeyAccess.apikeyId, input.apikeyId));
@@ -727,7 +716,7 @@ export const apikeysRouter = createTRPCRouter({
 				}
 				return { enabled: true, scopes: Array.from(effectiveScopes) };
 			} catch (error) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 				logger.error("Failed to resolve access", {
@@ -736,10 +725,9 @@ export const apikeysRouter = createTRPCRouter({
 					resourceType: input.resourceType,
 					resourceId: input.resourceId ?? null,
 				});
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to resolve access",
 				});
 			}
 		}),
-});
+};

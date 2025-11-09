@@ -158,7 +158,7 @@ export function WebsitePageHeader({
 								{icon}
 							</div>
 							<div>
-								<h1 className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text font-bold text-2xl text-transparent tracking-tight sm:text-3xl">
+								<h1 className="bg-linear-to-r from-foreground to-foreground/80 bg-clip-text font-bold text-2xl text-transparent tracking-tight sm:text-3xl">
 									{title}
 								</h1>
 								{renderSubtitle()}
@@ -195,7 +195,7 @@ export function WebsitePageHeader({
 						)}
 						{onCreateAction && (
 							<Button
-								className="group relative cursor-pointer select-none gap-2 overflow-hidden bg-gradient-to-r from-primary to-primary/90 px-8 py-4 font-medium text-sm transition-all duration-300 hover:from-primary/90 hover:to-primary"
+								className="group relative cursor-pointer select-none gap-2 overflow-hidden bg-linear-to-r from-primary to-primary/90 px-8 py-4 font-medium text-sm transition-all duration-300 hover:from-primary/90 hover:to-primary"
 								onClick={onCreateAction}
 							>
 								<PlusIcon size={16} />
@@ -245,7 +245,7 @@ export function WebsitePageHeader({
 export function WebsitePageHeaderSkeleton() {
 	return (
 		<div className="space-y-6">
-			<div className="border-b bg-gradient-to-r from-background via-background to-muted/20 pb-6">
+			<div className="border-b bg-linear-to-r from-background via-background to-muted/20 pb-6">
 				<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 					<div className="space-y-2">
 						<div className="flex items-center gap-3">

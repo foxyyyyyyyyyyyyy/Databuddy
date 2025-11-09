@@ -8,13 +8,14 @@ import {
 	SpinnerIcon,
 	TableIcon,
 } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { use } from "react";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useDbConnection } from "@/hooks/use-db-connections";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 
 interface DatabasePageProps {
 	params: Promise<{ id: string }>;
@@ -317,24 +318,28 @@ export default function DatabasePage({ params }: DatabasePageProps) {
 		data: databaseStats,
 		isLoading: isLoadingStats,
 		error: statsError,
-	} = trpc.dbConnections.getDatabaseStats.useQuery(
-		{ id: connectionId },
-		{ enabled: !!connection }
-	);
+	} = useQuery({
+		...orpc.dbConnections.getDatabaseStats.queryOptions({
+			input: { id: connectionId },
+		}),
+		enabled: !!connection,
+	});
 
 	const {
 		data: tableStats,
 		isLoading: isLoadingTables,
 		error: tablesError,
-	} = trpc.dbConnections.getTableStats.useQuery(
-		{ id: connectionId },
-		{ enabled: !!connection }
-	);
+	} = useQuery({
+		...orpc.dbConnections.getTableStats.queryOptions({
+			input: { id: connectionId },
+		}),
+		enabled: !!connection,
+	});
 
 	if (isLoadingConnection) {
 		return (
 			<div className="flex h-full flex-col">
-				<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+				<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 					<div className="flex items-center gap-4">
 						<div className="rounded border border-primary/20 bg-primary/10 p-3">
 							<DatabaseIcon className="h-6 w-6 text-primary" weight="duotone" />
@@ -358,7 +363,7 @@ export default function DatabasePage({ params }: DatabasePageProps) {
 	if (connectionError) {
 		return (
 			<div className="flex h-full flex-col">
-				<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+				<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 					<div className="flex items-center gap-4">
 						<div className="rounded border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950">
 							<DatabaseIcon className="h-6 w-6 text-red-600" weight="duotone" />
@@ -391,7 +396,7 @@ export default function DatabasePage({ params }: DatabasePageProps) {
 	if (!connection) {
 		return (
 			<div className="flex h-full flex-col">
-				<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+				<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 					<div className="flex items-center gap-4">
 						<div className="rounded border border-primary/20 bg-primary/10 p-3">
 							<DatabaseIcon className="h-6 w-6 text-primary" weight="duotone" />
@@ -418,7 +423,7 @@ export default function DatabasePage({ params }: DatabasePageProps) {
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded-xl border border-primary/20 bg-primary/10 p-3">
 						<DatabaseIcon className="h-6 w-6 text-primary" weight="duotone" />

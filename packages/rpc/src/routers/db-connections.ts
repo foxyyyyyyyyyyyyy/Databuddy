@@ -1,6 +1,6 @@
 import { websitesApi } from "@databuddy/auth";
 import { and, dbConnections, eq, isNull } from "@databuddy/db";
-import { TRPCError } from "@trpc/server";
+import { ORPCError } from "@orpc/server";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import {
@@ -15,7 +15,7 @@ import {
 	testConnection,
 	updateExtension,
 } from "../database";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { protectedProcedure } from "../orpc";
 import { authorizeDbConnectionAccess } from "../utils/auth";
 import {
 	decryptConnectionUrl,
@@ -38,33 +38,32 @@ const buildDbConnectionFilter = (userId: string, organizationId?: string) =>
 	organizationId
 		? eq(dbConnections.organizationId, organizationId)
 		: and(
-				eq(dbConnections.userId, userId),
-				isNull(dbConnections.organizationId)
-			);
+			eq(dbConnections.userId, userId),
+			isNull(dbConnections.organizationId)
+		);
 
-export const dbConnectionsRouter = createTRPCRouter({
+export const dbConnectionsRouter = {
 	list: protectedProcedure
 		.input(z.object({ organizationId: z.string().optional() }).default({}))
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			if (input.organizationId) {
 				const { success } = await websitesApi.hasPermission({
-					headers: ctx.headers,
+					headers: context.headers,
 					body: { permissions: { website: ["read"] } },
 				});
 				if (!success) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
+					throw new ORPCError("FORBIDDEN", {
 						message: "Missing organization permissions.",
 					});
 				}
 			}
 
 			const whereClause = buildDbConnectionFilter(
-				ctx.user.id,
+				context.user.id,
 				input.organizationId
 			);
 
-			const connections = await ctx.db.query.dbConnections.findMany({
+			const connections = await context.db.query.dbConnections.findMany({
 				where: whereClause,
 				columns: {
 					id: true,
@@ -83,8 +82,8 @@ export const dbConnectionsRouter = createTRPCRouter({
 
 	getById: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.query(async ({ ctx, input }) => {
-			const connection = await ctx.db.query.dbConnections.findFirst({
+		.handler(async ({ context, input }) => {
+			const connection = await context.db.query.dbConnections.findFirst({
 				where: eq(dbConnections.id, input.id),
 				columns: {
 					id: true,
@@ -98,8 +97,7 @@ export const dbConnectionsRouter = createTRPCRouter({
 			});
 
 			if (!connection) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
+				throw new ORPCError("NOT_FOUND", {
 					message: "Connection not found",
 				});
 			}
@@ -107,18 +105,16 @@ export const dbConnectionsRouter = createTRPCRouter({
 			// Check access permissions
 			if (connection.organizationId) {
 				const { success } = await websitesApi.hasPermission({
-					headers: ctx.headers,
+					headers: context.headers,
 					body: { permissions: { website: ["read"] } },
 				});
 				if (!success) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
+					throw new ORPCError("FORBIDDEN", {
 						message: "Missing organization permissions.",
 					});
 				}
-			} else if (connection.userId !== ctx.user.id) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
+			} else if (connection.userId !== context.user.id) {
+				throw new ORPCError("FORBIDDEN", {
 					message: "Access denied",
 				});
 			}
@@ -128,15 +124,14 @@ export const dbConnectionsRouter = createTRPCRouter({
 
 	create: protectedProcedure
 		.input(createDbConnectionSchema)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			if (input.organizationId) {
 				const { success } = await websitesApi.hasPermission({
-					headers: ctx.headers,
+					headers: context.headers,
 					body: { permissions: { website: ["create"] } },
 				});
 				if (!success) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
+					throw new ORPCError("FORBIDDEN", {
 						message: "Missing organization permissions.",
 					});
 				}
@@ -145,11 +140,11 @@ export const dbConnectionsRouter = createTRPCRouter({
 			// Test connection
 			await testConnection(input.url);
 
-			const [connection] = await ctx.db
+			const [connection] = await context.db
 				.insert(dbConnections)
 				.values({
 					id: nanoid(),
-					userId: ctx.user.id,
+					userId: context.user.id,
 					name: input.name,
 					type: input.type,
 					url: encryptConnectionUrl(input.url),
@@ -172,10 +167,10 @@ export const dbConnectionsRouter = createTRPCRouter({
 
 	update: protectedProcedure
 		.input(updateDbConnectionSchema)
-		.mutation(async ({ ctx, input }) => {
-			await authorizeDbConnectionAccess(ctx, input.id, "update");
+		.handler(async ({ context, input }) => {
+			await authorizeDbConnectionAccess(context, input.id, "update");
 
-			const [connection] = await ctx.db
+			const [connection] = await context.db
 				.update(dbConnections)
 				.set({
 					name: input.name,
@@ -193,8 +188,7 @@ export const dbConnectionsRouter = createTRPCRouter({
 				});
 
 			if (!connection) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
+				throw new ORPCError("NOT_FOUND", {
 					message: "Connection not found",
 				});
 			}
@@ -204,11 +198,11 @@ export const dbConnectionsRouter = createTRPCRouter({
 
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.mutation(async ({ ctx, input }) => {
-			await authorizeDbConnectionAccess(ctx, input.id, "delete");
+		.handler(async ({ context, input }) => {
+			await authorizeDbConnectionAccess(context, input.id, "delete");
 
 			// Delete from our database
-			const [connection] = await ctx.db
+			const [connection] = await context.db
 				.delete(dbConnections)
 				.where(eq(dbConnections.id, input.id))
 				.returning({
@@ -217,8 +211,7 @@ export const dbConnectionsRouter = createTRPCRouter({
 				});
 
 			if (!connection) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
+				throw new ORPCError("NOT_FOUND", {
 					message: "Connection not found",
 				});
 			}
@@ -228,9 +221,9 @@ export const dbConnectionsRouter = createTRPCRouter({
 
 	getDatabaseStats: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const connection = await authorizeDbConnectionAccess(
-				ctx,
+				context,
 				input.id,
 				"read"
 			);
@@ -240,9 +233,8 @@ export const dbConnectionsRouter = createTRPCRouter({
 				const stats = await getDatabaseStats(decryptedUrl);
 				return stats;
 			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to get database stats: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to get database stats: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
@@ -254,9 +246,9 @@ export const dbConnectionsRouter = createTRPCRouter({
 				limit: z.number().optional(),
 			})
 		)
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const connection = await authorizeDbConnectionAccess(
-				ctx,
+				context,
 				input.id,
 				"read"
 			);
@@ -266,18 +258,17 @@ export const dbConnectionsRouter = createTRPCRouter({
 				const stats = await getTableStats(decryptedUrl, input.limit);
 				return stats;
 			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to get table stats: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to get table stats: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
 
 	getExtensions: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const connection = await authorizeDbConnectionAccess(
-				ctx,
+				context,
 				input.id,
 				"read"
 			);
@@ -287,18 +278,17 @@ export const dbConnectionsRouter = createTRPCRouter({
 				const extensions = await getExtensions(decryptedUrl);
 				return extensions;
 			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to get extensions: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to get extensions: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
 
 	getAvailableExtensions: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const connection = await authorizeDbConnectionAccess(
-				ctx,
+				context,
 				input.id,
 				"read"
 			);
@@ -308,9 +298,8 @@ export const dbConnectionsRouter = createTRPCRouter({
 				const availableExtensions = await getAvailableExtensions(decryptedUrl);
 				return availableExtensions;
 			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to get available extensions: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to get available extensions: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
@@ -322,9 +311,9 @@ export const dbConnectionsRouter = createTRPCRouter({
 				extensionName: z.string(),
 			})
 		)
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const connection = await authorizeDbConnectionAccess(
-				ctx,
+				context,
 				input.id,
 				"read"
 			);
@@ -337,9 +326,8 @@ export const dbConnectionsRouter = createTRPCRouter({
 				);
 				return safetyCheck;
 			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to check extension safety: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to check extension safety: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
@@ -351,9 +339,9 @@ export const dbConnectionsRouter = createTRPCRouter({
 				extensionName: z.string(),
 			})
 		)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const connection = await authorizeDbConnectionAccess(
-				ctx,
+				context,
 				input.id,
 				"update"
 			);
@@ -363,9 +351,8 @@ export const dbConnectionsRouter = createTRPCRouter({
 				await updateExtension(decryptedUrl, input.extensionName);
 				return { success: true };
 			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to update extension: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to update extension: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
@@ -377,9 +364,9 @@ export const dbConnectionsRouter = createTRPCRouter({
 				extensionName: z.string(),
 			})
 		)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const connection = await authorizeDbConnectionAccess(
-				ctx,
+				context,
 				input.id,
 				"update"
 			);
@@ -389,9 +376,8 @@ export const dbConnectionsRouter = createTRPCRouter({
 				await resetExtensionStats(decryptedUrl, input.extensionName);
 				return { success: true };
 			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to reset extension stats: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to reset extension stats: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
@@ -405,9 +391,9 @@ export const dbConnectionsRouter = createTRPCRouter({
 				force: z.boolean().optional(),
 			})
 		)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const connection = await authorizeDbConnectionAccess(
-				ctx,
+				context,
 				input.id,
 				"update"
 			);
@@ -422,9 +408,8 @@ export const dbConnectionsRouter = createTRPCRouter({
 				);
 				return result;
 			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to install extension: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to install extension: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
@@ -437,9 +422,9 @@ export const dbConnectionsRouter = createTRPCRouter({
 				cascade: z.boolean().optional(),
 			})
 		)
-		.mutation(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			const connection = await authorizeDbConnectionAccess(
-				ctx,
+				context,
 				input.id,
 				"update"
 			);
@@ -453,10 +438,9 @@ export const dbConnectionsRouter = createTRPCRouter({
 				);
 				return result;
 			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to drop extension: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to drop extension: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
-});
+};

@@ -21,20 +21,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatMetricNumber } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 
-interface MiniChartDataPoint {
+type MiniChartDataPoint = {
 	date: string;
 	value: number;
-}
+};
 
-interface Trend {
+type Trend = {
 	change?: number;
 	current: number;
 	previous: number;
 	currentPeriod: { start: string; end: string };
 	previousPeriod: { start: string; end: string };
-}
+};
 
-interface StatCardProps {
+type StatCardProps = {
 	title: string;
 	titleExtra?: React.ReactNode;
 	value: string | number;
@@ -51,7 +51,7 @@ interface StatCardProps {
 	showChart?: boolean;
 	formatValue?: (value: number) => string;
 	formatChartValue?: (value: number) => string;
-}
+};
 
 const formatTrendValue = (
 	value: string | number,
@@ -242,7 +242,7 @@ export function StatCard({
 								<Skeleton className="mt-1 h-6 w-24 rounded-md sm:h-8" />
 							</div>
 							{Icon && (
-								<div className="ml-1.5 flex-shrink-0 rounded-lg bg-muted/50 p-1 sm:ml-2 sm:p-1.5">
+								<div className="ml-1.5 shrink-0 rounded-lg bg-muted/50 p-1 sm:ml-2 sm:p-1.5">
 									<Skeleton className="h-3 w-3 rounded-full sm:h-4 sm:w-4" />
 								</div>
 							)}
@@ -285,7 +285,7 @@ export function StatCard({
 			id={id}
 		>
 			<div className="relative p-3 sm:p-4">
-				<div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] to-transparent opacity-0 group-hover:opacity-100" />
+				<div className="absolute inset-0 bg-linear-to-br from-primary/2 to-transparent opacity-0 group-hover:opacity-100" />
 
 				<div className="relative z-10 space-y-1.5 sm:space-y-2">
 					<div className="flex items-start justify-between">
@@ -311,7 +311,7 @@ export function StatCard({
 							</div>
 						</div>
 						{Icon && (
-							<div className="ml-1.5 flex-shrink-0 rounded-lg bg-primary/5 p-1 group-hover:bg-primary/10 sm:ml-2 sm:p-1.5">
+							<div className="ml-1.5 shrink-0 rounded-lg bg-primary/5 p-1 group-hover:bg-primary/10 sm:ml-2 sm:p-1.5">
 								<Icon className="h-3 w-3 text-primary/70 group-hover:text-primary sm:h-4 sm:w-4" />
 							</div>
 						)}
@@ -346,7 +346,7 @@ export function StatCard({
 					</div>
 
 					{hasValidChartData && (
-						<div className="-mb-0.5 sm:-mb-1 [--chart-color:theme(colors.primary.DEFAULT)] group-hover:[--chart-color:theme(colors.primary.500)]">
+						<div className="-mb-0.5 sm:-mb-1 [--chart-color:var(--primary)] group-hover:[--chart-color:var(--primary-500)]">
 							<MiniChart
 								data={chartData}
 								formatChartValue={formatChartValue}

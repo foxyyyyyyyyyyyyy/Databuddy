@@ -30,15 +30,13 @@ import {
 import { formatAnnotationDateRange } from "@/lib/annotation-utils";
 import type { Annotation } from "@/types/annotations";
 
-// Using shared Annotation type from @/types/annotations
-
-interface AnnotationsPanelProps {
+type AnnotationsPanelProps = {
 	annotations: Annotation[];
 	onEdit: (annotation: Annotation) => void;
 	onDelete: (id: string) => Promise<void>;
 	isDeleting?: boolean;
 	granularity?: "hourly" | "daily" | "weekly" | "monthly";
-}
+};
 
 export function AnnotationsPanel({
 	annotations,

@@ -12,11 +12,11 @@ export function DatabaseHeader({ database }: DatabaseHeaderProps) {
 	return (
 		<div className="border-sidebar-border border-b bg-sidebar-accent">
 			{/* Database info - aligned with logo section */}
-			<div className="flex h-12 items-center border-sidebar-border border-b bg-gradient-to-r from-sidebar-accent to-sidebar-accent/80 px-3">
+			<div className="flex h-12 items-center border-sidebar-border border-b bg-linear-to-r from-sidebar-accent to-sidebar-accent/80 px-3">
 				<div className="flex w-full items-center gap-3">
 					<div className="rounded-lg bg-sidebar/80 p-1.5 shadow-sm ring-1 ring-sidebar-border/50">
 						<DatabaseIcon
-							className="size-5 flex-shrink-0 text-sidebar-ring"
+							className="size-5 shrink-0 text-sidebar-ring"
 							weight="duotone"
 						/>
 					</div>
@@ -54,7 +54,7 @@ export function DatabaseHeader({ database }: DatabaseHeaderProps) {
 					href="/observability/database"
 				>
 					<CaretLeftIcon
-						className="group-hover:-translate-x-0.5 h-5 w-5 flex-shrink-0 text-sidebar-accent-foreground/80 transition-transform"
+						className="group-hover:-translate-x-0.5 h-5 w-5 shrink-0 text-sidebar-accent-foreground/80 transition-transform"
 						weight="fill"
 					/>
 					<span className="text-sidebar-accent-foreground/70 text-xs">

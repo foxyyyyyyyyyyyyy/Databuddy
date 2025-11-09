@@ -123,7 +123,7 @@ function SessionRowInternal({
 			<CollapsibleTrigger asChild>
 				<div className="group flex cursor-pointer items-center justify-between border-transparent border-l-4 p-5 hover:border-primary/20 hover:bg-muted/30">
 					<div className="flex min-w-0 flex-1 items-center gap-4">
-						<div className="flex flex-shrink-0 items-center gap-3">
+						<div className="flex shrink-0 items-center gap-3">
 							<div>
 								{isExpanded ? (
 									<CaretDownIcon className="h-4 w-4 text-muted-foreground" />
@@ -135,7 +135,7 @@ function SessionRowInternal({
 								{index + 1}
 							</div>
 						</div>
-						<div className="flex flex-shrink-0 items-center gap-2">
+						<div className="flex shrink-0 items-center gap-2">
 							<CountryFlag country={session.country_code} size="md" />
 							{getDeviceIcon(session.device_type)}
 							<BrowserIcon name={session.browser_name} size="md" />
@@ -161,16 +161,16 @@ function SessionRowInternal({
 							</div>
 						</div>
 
-						<div className="hidden min-w-[120px] flex-shrink-0 items-center gap-2 lg:flex">
+						<div className="hidden min-w-[120px] shrink-0 items-center gap-2 lg:flex">
 							<div className="flex items-center gap-2">
 								{referrerInfo.domain ? (
 									<FaviconImage
-										className="flex-shrink-0"
+										className="shrink-0"
 										domain={referrerInfo.domain}
 										size={16}
 									/>
 								) : (
-									<ArrowSquareOutIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+									<ArrowSquareOutIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
 								)}
 								<span className="truncate text-muted-foreground text-sm">
 									{referrerInfo.name}
@@ -179,7 +179,7 @@ function SessionRowInternal({
 						</div>
 					</div>
 
-					<div className="ml-4 flex flex-shrink-0 items-center gap-4 text-sm">
+					<div className="ml-4 flex shrink-0 items-center gap-4 text-sm">
 						<div className="hidden min-w-[60px] flex-col items-center gap-1 sm:flex">
 							<div className="flex items-center gap-1 text-muted-foreground text-xs">
 								<EyeIcon className="h-3 w-3" />
@@ -243,12 +243,12 @@ function SessionRowInternal({
 							<div className="flex items-center justify-center gap-2">
 								{referrerInfo.domain ? (
 									<FaviconImage
-										className="flex-shrink-0"
+										className="shrink-0"
 										domain={referrerInfo.domain}
 										size={16}
 									/>
 								) : (
-									<ArrowSquareOutIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+									<ArrowSquareOutIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
 								)}
 								<span className="truncate font-medium text-foreground text-sm">
 									{referrerInfo.name}
@@ -270,7 +270,7 @@ function SessionRowInternal({
 									<span className="text-slate-600 text-xs">total events</span>
 								</div>
 								{customEventCount > 0 && (
-									<div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-100 to-purple-100 px-3 py-2">
+									<div className="flex items-center gap-2 rounded-lg bg-linear-to-r from-violet-100 to-purple-100 px-3 py-2">
 										<SparkleIcon className="h-4 w-4 text-violet-600" />
 										<span className="font-bold text-sm text-violet-800">
 											{customEventCount}

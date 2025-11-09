@@ -125,7 +125,7 @@ export const WebsiteCard = memo(
 							<CardDescription className="flex items-center gap-1 pt-0.5">
 								<FaviconImage
 									altText={`${website.name} favicon`}
-									className="flex-shrink-0"
+									className="shrink-0"
 									domain={website.domain}
 									size={24}
 								/>
@@ -136,7 +136,7 @@ export const WebsiteCard = memo(
 						</div>
 						<ArrowRightIcon
 							aria-hidden="true"
-							className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
+							className="h-4 w-4 shrink-0 text-muted-foreground transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
 							weight="fill"
 						/>
 					</div>

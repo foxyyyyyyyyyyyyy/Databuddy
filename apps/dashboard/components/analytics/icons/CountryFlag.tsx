@@ -2,10 +2,10 @@
 
 import { useMemo } from "react";
 
-interface CountryFlagProps {
+type CountryFlagProps = {
 	country: string;
 	size?: number;
-}
+};
 
 export function CountryFlag({ country, size = 18 }: CountryFlagProps) {
 	const countryCode = country.toLowerCase();

@@ -490,7 +490,7 @@ export const PricingFeatureList = ({
 						key={featureItem.display?.primary_text}
 					>
 						{showIcon && (
-							<CheckIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+							<CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
 						)}
 						<div className="flex flex-col">
 							<span>{featureItem.display?.primary_text}</span>

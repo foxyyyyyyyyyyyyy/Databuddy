@@ -1,29 +1,40 @@
 "use client";
 
 import { authClient } from "@databuddy/auth/client";
-import type { AppRouter } from "@databuddy/rpc";
-import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
-import { trpc } from "@/lib/trpc";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { orpc } from "@/lib/orpc";
 
-type RouterInput = inferRouterInputs<AppRouter>;
-type RouterOutput = inferRouterOutputs<AppRouter>;
+type DbConnection = Awaited<
+	ReturnType<
+		ReturnType<typeof orpc.dbConnections.list.queryOptions>["queryFn"]
+	>
+>[number];
 
-export type DbConnection = RouterOutput["dbConnections"]["list"][number];
-export type CreateDbConnectionData = RouterInput["dbConnections"]["create"];
-export type UpdateDbConnectionData = RouterInput["dbConnections"]["update"];
+export type { DbConnection };
+export type CreateDbConnectionData = {
+	name: string;
+	type?: string;
+	url: string;
+	organizationId?: string;
+};
+export type UpdateDbConnectionData = {
+	id: string;
+	name?: string;
+};
 
 export function useDbConnections() {
 	const { data: activeOrganization, isPending: isLoadingOrganization } =
 		authClient.useActiveOrganization();
 
-	const { data, isLoading, isError, error, refetch, isFetching } =
-		trpc.dbConnections.list.useQuery(
-			{ organizationId: activeOrganization?.id },
-			{ enabled: !isLoadingOrganization }
-		);
+	const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
+		...orpc.dbConnections.list.queryOptions({
+			input: { organizationId: activeOrganization?.id },
+		}),
+		enabled: !isLoadingOrganization,
+	});
 
 	return {
-		connections: data || [],
+		connections: data ?? [],
 		isLoading: isLoading || isLoadingOrganization,
 		isFetching,
 		isError,
@@ -33,7 +44,10 @@ export function useDbConnections() {
 }
 
 export function useDbConnection(id: string) {
-	return trpc.dbConnections.getById.useQuery({ id }, { enabled: !!id });
+	return useQuery({
+		...orpc.dbConnections.getById.queryOptions({ input: { id } }),
+		enabled: !!id,
+	});
 }
 
 export function useCreateDbConnection({
@@ -42,15 +56,16 @@ export function useCreateDbConnection({
 }: {
 	onSuccess?: () => void;
 	onError?: (errorMessage: string) => void;
-}) {
-	const utils = trpc.useUtils();
-	return trpc.dbConnections.create.useMutation({
+} = {}) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		...orpc.dbConnections.create.mutationOptions(),
 		onSuccess: (newConnection, variables) => {
-			const queryKey = {
-				organizationId: variables.organizationId ?? undefined,
-			};
+			const listKey = orpc.dbConnections.list.queryOptions({
+				input: { organizationId: variables.organizationId ?? undefined },
+			}).queryKey;
 
-			utils.dbConnections.list.setData(queryKey, (old) => {
+			queryClient.setQueryData<DbConnection[]>(listKey, (old) => {
 				if (!old) {
 					return [newConnection];
 				}
@@ -61,7 +76,7 @@ export function useCreateDbConnection({
 		},
 		onError: (error) => {
 			console.error("Failed to create database connection:", error);
-			onError?.(error.message);
+			onError?.(error instanceof Error ? error.message : String(error));
 		},
 	});
 }
@@ -73,15 +88,18 @@ export function useUpdateDbConnection({
 	onSuccess?: () => void;
 	onError?: (errorMessage: string) => void;
 } = {}) {
-	const utils = trpc.useUtils();
-	return trpc.dbConnections.update.useMutation({
+	const queryClient = useQueryClient();
+	return useMutation({
+		...orpc.dbConnections.update.mutationOptions(),
 		onSuccess: (updatedConnection) => {
-			const getByIdKey = { id: updatedConnection.id };
-			const listKey = {
-				organizationId: updatedConnection.organizationId ?? undefined,
-			};
+			const getByIdKey = orpc.dbConnections.getById.queryOptions({
+				input: { id: updatedConnection.id },
+			}).queryKey;
+			const listKey = orpc.dbConnections.list.queryOptions({
+				input: { organizationId: updatedConnection.organizationId ?? undefined },
+			}).queryKey;
 
-			utils.dbConnections.list.setData(listKey, (old) => {
+			queryClient.setQueryData<DbConnection[]>(listKey, (old) => {
 				if (!old) {
 					return old;
 				}
@@ -92,12 +110,12 @@ export function useUpdateDbConnection({
 				);
 			});
 
-			utils.dbConnections.getById.setData(getByIdKey, updatedConnection);
+			queryClient.setQueryData(getByIdKey, updatedConnection);
 			onSuccess?.();
 		},
 		onError: (error) => {
 			console.error("Failed to update database connection:", error);
-			onError?.(error.message);
+			onError?.(error instanceof Error ? error.message : String(error));
 		},
 	});
 }
@@ -108,22 +126,28 @@ export function useDeleteDbConnection({
 }: {
 	onSuccess?: () => void;
 	onError?: (errorMessage: string) => void;
-}) {
-	const utils = trpc.useUtils();
-	return trpc.dbConnections.delete.useMutation({
+} = {}) {
+	const queryClient = useQueryClient();
+	return useMutation({
+		...orpc.dbConnections.delete.mutationOptions(),
 		onMutate: async ({ id }) => {
-			const getByIdKey = { id };
-			const previousConnection =
-				utils.dbConnections.getById.getData(getByIdKey);
+			const getByIdKey = orpc.dbConnections.getById.queryOptions({
+				input: { id },
+			}).queryKey;
+			const previousConnection = queryClient.getQueryData<DbConnection>(
+				getByIdKey
+			);
 
-			const listKey = {
-				organizationId: previousConnection?.organizationId ?? undefined,
-			};
+			const listKey = orpc.dbConnections.list.queryOptions({
+				input: {
+					organizationId: previousConnection?.organizationId ?? undefined,
+				},
+			}).queryKey;
 
-			await utils.dbConnections.list.cancel(listKey);
-			const previousData = utils.dbConnections.list.getData(listKey);
+			await queryClient.cancelQueries({ queryKey: listKey });
+			const previousData = queryClient.getQueryData<DbConnection[]>(listKey);
 
-			utils.dbConnections.list.setData(listKey, (old) => {
+			queryClient.setQueryData<DbConnection[]>(listKey, (old) => {
 				if (!old) {
 					return old;
 				}
@@ -132,14 +156,17 @@ export function useDeleteDbConnection({
 
 			return { previousData, listKey };
 		},
-		onError: (error, __, context) => {
+		onError: (error, _variables, context) => {
 			if (context?.previousData && context.listKey) {
-				utils.dbConnections.list.setData(context.listKey, context.previousData);
+				queryClient.setQueryData(context.listKey, context.previousData);
 			}
-			onError?.(error.message);
+			onError?.(error instanceof Error ? error.message : String(error));
 		},
-		onSuccess: (_, { id }) => {
-			utils.dbConnections.getById.setData({ id }, undefined);
+		onSuccess: (_data, { id }) => {
+			const getByIdKey = orpc.dbConnections.getById.queryOptions({
+				input: { id },
+			}).queryKey;
+			queryClient.setQueryData(getByIdKey, undefined);
 			onSuccess?.();
 		},
 	});

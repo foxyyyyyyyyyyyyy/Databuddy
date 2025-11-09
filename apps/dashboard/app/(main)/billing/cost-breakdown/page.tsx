@@ -1,11 +1,12 @@
 "use client";
 
 import { ChartLineUpIcon, FlaskIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import { Suspense, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrganizations } from "@/hooks/use-organizations";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import { ConsumptionChart } from "./components/consumption-chart";
 import { UsageBreakdownTable } from "./components/usage-breakdown-table";
 
@@ -31,12 +32,14 @@ export default function CostBreakdownPage() {
 		[dateRange, activeOrganization?.id]
 	);
 
-	const { data: usageData, isLoading: isLoadingUsage } =
-		trpc.billing.getUsage.useQuery(usageQueryInput, {
-			enabled: !isLoadingOrganizations,
-		});
+	const { data: usageData, isLoading: isLoadingUsage } = useQuery({
+		...orpc.billing.getUsage.queryOptions({ input: usageQueryInput }),
+		enabled: !isLoadingOrganizations,
+	});
 
-	const { data: organizationUsage } = trpc.organizations.getUsage.useQuery();
+	const { data: organizationUsage } = useQuery({
+		...orpc.organizations.getUsage.queryOptions(),
+	});
 
 	const isLoading = isLoadingUsage;
 
@@ -66,7 +69,7 @@ export default function CostBreakdownPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded-xl border border-primary/20 bg-primary/10 p-3">
 						<ChartLineUpIcon className="h-6 w-6 text-primary" />

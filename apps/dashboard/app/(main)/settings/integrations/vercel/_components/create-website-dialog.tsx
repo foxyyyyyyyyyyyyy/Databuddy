@@ -22,14 +22,14 @@ import {
 import type { Domain, Project, WebsiteConfig } from "./types";
 import { generateWebsiteName, generateWebsitePlaceholder } from "./utils";
 
-interface CreateWebsiteDialogProps {
+type CreateWebsiteDialogProps = {
 	isOpen: boolean;
 	onClose: () => void;
 	onSave: (configs: WebsiteConfig[]) => Promise<void>;
 	selectedProject: Project | null;
 	selectedDomains: Domain[];
 	isSaving: boolean;
-}
+};
 
 export function CreateWebsiteDialog({
 	isOpen,
@@ -373,7 +373,7 @@ export function CreateWebsiteDialog({
 							Cancel
 						</Button>
 						<Button
-							className="relative h-9 rounded bg-gradient-to-r from-primary to-primary/90 px-4 font-medium shadow-sm transition-all hover:from-primary/90 hover:to-primary hover:shadow-md disabled:opacity-50"
+							className="relative h-9 rounded bg-linear-to-r from-primary to-primary/90 px-4 font-medium shadow-sm transition-all hover:from-primary/90 hover:to-primary hover:shadow-md disabled:opacity-50"
 							disabled={!isFormValid || isSaving}
 							onClick={handleSubmit}
 						>

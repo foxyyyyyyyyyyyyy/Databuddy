@@ -1,30 +1,9 @@
 "use client";
 
-import { trpc } from "@/lib/trpc";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { orpc } from "@/lib/orpc";
 
-interface CreateAnnotationInput {
-	websiteId: string;
-	chartType: "metrics";
-	chartContext: Record<string, any>;
-	annotationType: "point" | "line" | "range";
-	xValue: string;
-	xEndValue?: string;
-	yValue?: number;
-	text: string;
-	tags?: string[];
-	color?: string;
-	isPublic?: boolean;
-}
-
-interface UpdateAnnotationInput {
-	id: string;
-	text?: string;
-	tags?: string[];
-	color?: string;
-	isPublic?: boolean;
-}
-
-interface ListAnnotationsInput {
+type ListAnnotationsInput = {
 	websiteId: string;
 	chartType: "metrics";
 	chartContext: {
@@ -44,20 +23,25 @@ interface ListAnnotationsInput {
 }
 
 export function useAnnotations(input: ListAnnotationsInput) {
-	const {
-		data: annotations,
-		isLoading,
-		error,
-	} = trpc.annotations.list.useQuery(input, { enabled: !!input.websiteId });
+	const { data: annotations, isLoading, error } = useQuery({
+		...orpc.annotations.list.queryOptions({ input }),
+		enabled: !!input.websiteId,
+	});
 
-	const createAnnotation = trpc.annotations.create.useMutation();
+	const createAnnotation = useMutation({
+		...orpc.annotations.create.mutationOptions(),
+	});
 
-	const updateAnnotation = trpc.annotations.update.useMutation();
+	const updateAnnotation = useMutation({
+		...orpc.annotations.update.mutationOptions(),
+	});
 
-	const deleteAnnotation = trpc.annotations.delete.useMutation();
+	const deleteAnnotation = useMutation({
+		...orpc.annotations.delete.mutationOptions(),
+	});
 
 	return {
-		annotations: annotations || [],
+		annotations: annotations ?? [],
 		isLoading,
 		error,
 		createAnnotation,
@@ -67,5 +51,8 @@ export function useAnnotations(input: ListAnnotationsInput) {
 }
 
 export function useAnnotationById(id: string) {
-	return trpc.annotations.getById.useQuery({ id }, { enabled: !!id });
+	return useQuery({
+		...orpc.annotations.getById.queryOptions({ input: { id } }),
+		enabled: !!id,
+	});
 }

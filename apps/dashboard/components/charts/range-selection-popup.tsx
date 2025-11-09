@@ -28,16 +28,16 @@ import {
 } from "@/lib/annotation-utils";
 import { cn } from "@/lib/utils";
 
-interface RangeSelectionPopupProps {
+type RangeSelectionPopupProps = {
 	isOpen: boolean;
 	position: { x: number; y: number };
 	dateRange: {
 		startDate: Date;
 		endDate: Date;
 	};
-	onClose: () => void;
-	onZoom: (dateRange: { startDate: Date; endDate: Date }) => void;
-	onCreateAnnotation: (annotation: {
+	onCloseAction: () => void;
+	onZoomAction: (dateRange: { startDate: Date; endDate: Date }) => void;
+	onCreateAnnotationAction: (annotation: {
 		annotationType: "range";
 		xValue: string;
 		xEndValue: string;
@@ -46,17 +46,14 @@ interface RangeSelectionPopupProps {
 		color: string;
 		isPublic: boolean;
 	}) => Promise<void> | void;
-}
-
-// Using shared constants from @/lib/annotation-constants
+};
 
 export function RangeSelectionPopup({
 	isOpen,
-	position,
 	dateRange,
-	onClose,
-	onZoom,
-	onCreateAnnotation,
+	onCloseAction,
+	onZoomAction,
+	onCreateAnnotationAction,
 }: RangeSelectionPopupProps) {
 	const [showAnnotationForm, setShowAnnotationForm] = useState(false);
 	const [annotationText, setAnnotationText] = useState("");
@@ -72,11 +69,13 @@ export function RangeSelectionPopup({
 	const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
 	useEffect(() => {
-		if (!isOpen) return;
+		if (!isOpen) {
+			return;
+		}
 
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
-				onClose();
+				onCloseAction();
 			} else if (e.key === "Enter" && e.ctrlKey && showAnnotationForm) {
 				e.preventDefault();
 				handleCreateAnnotation();
@@ -94,12 +93,14 @@ export function RangeSelectionPopup({
 	}, [isOpen, showAnnotationForm]);
 
 	const handleZoom = () => {
-		onZoom(dateRange);
-		onClose();
+		onZoomAction(dateRange);
+		onCloseAction();
 	};
 
 	const handleCreateAnnotation = async () => {
-		if (!annotationText.trim() || isSubmitting) return;
+		if (!annotationText.trim() || isSubmitting) {
+			return;
+		}
 
 		const formData = {
 			text: sanitizeAnnotationText(annotationText),
@@ -117,13 +118,13 @@ export function RangeSelectionPopup({
 		setValidationErrors([]);
 		setIsSubmitting(true);
 		try {
-			await onCreateAnnotation({
+			await onCreateAnnotationAction({
 				annotationType: "range",
 				xValue: dateRange.startDate.toISOString(),
 				xEndValue: dateRange.endDate.toISOString(),
 				...formData,
 			});
-			onClose();
+			onCloseAction();
 		} catch (error) {
 			// Error is handled by toast in parent
 			console.error("Error creating annotation:", error);
@@ -149,7 +150,9 @@ export function RangeSelectionPopup({
 		}
 	};
 
-	if (!isOpen) return null;
+	if (!isOpen) {
+		return null;
+	}
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-sidebar-foreground/5">
@@ -194,7 +197,7 @@ export function RangeSelectionPopup({
 						</div>
 						<Button
 							className="h-8 w-8 p-0 hover:bg-sidebar-accent"
-							onClick={onClose}
+							onClick={onCloseAction}
 							size="sm"
 							variant="ghost"
 						>
@@ -343,6 +346,7 @@ export function RangeSelectionPopup({
 															key={tag.value}
 															onClick={() => addTag(tag.value)}
 															style={{ borderColor: tag.color }}
+															type="button"
 														>
 															<div
 																className="h-2 w-2 rounded-full"
@@ -375,6 +379,7 @@ export function RangeSelectionPopup({
 													onClick={() => setSelectedColor(color.value)}
 													style={{ backgroundColor: color.value }}
 													title={color.label}
+													type="button"
 												/>
 											))}
 										</div>
@@ -419,7 +424,7 @@ export function RangeSelectionPopup({
 										<Button
 											className="flex-1"
 											disabled={isSubmitting}
-											onClick={onClose}
+											onClick={onCloseAction}
 											size="lg"
 											variant="outline"
 										>

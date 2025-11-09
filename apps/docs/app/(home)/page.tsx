@@ -96,7 +96,7 @@ export default function HomePage() {
 
 						{/* Divider */}
 						<div className="mx-auto w-full">
-							<div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+							<div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
 						</div>
 
 						{/* FAQ Section */}
@@ -119,7 +119,7 @@ export default function HomePage() {
 
 				{/* Gradient Divider */}
 				<div className="w-full">
-					<div className="mx-auto h-px max-w-6xl bg-gradient-to-r from-transparent via-border/30 to-transparent" />
+					<div className="mx-auto h-px max-w-6xl bg-linear-to-r from-transparent via-border/30 to-transparent" />
 				</div>
 
 				{/* Footer Section */}
@@ -127,7 +127,7 @@ export default function HomePage() {
 
 				{/* Final Gradient Divider */}
 				<div className="w-full">
-					<div className="mx-auto h-px max-w-6xl bg-gradient-to-r from-transparent via-border/30 to-transparent" />
+					<div className="mx-auto h-px max-w-6xl bg-linear-to-r from-transparent via-border/30 to-transparent" />
 				</div>
 			</div>
 		</>

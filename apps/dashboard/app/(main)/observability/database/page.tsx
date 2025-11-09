@@ -166,7 +166,7 @@ export default function DatabasePage() {
 
 	return (
 		<div className="flex h-full flex-col" ref={pageRef}>
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded-xl border border-primary/20 bg-primary/10 p-3">
 						<DatabaseIcon className="h-6 w-6 text-primary" weight="duotone" />
@@ -200,7 +200,7 @@ export default function DatabasePage() {
 							Refresh Data
 						</Button>
 						<Button
-							className="gap-2 bg-gradient-to-r from-primary to-primary/90 shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary hover:shadow-xl"
+							className="gap-2 bg-linear-to-r from-primary to-primary/90 shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary hover:shadow-xl"
 							onClick={handleCreateConnection}
 						>
 							<PlusIcon />

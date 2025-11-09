@@ -57,7 +57,7 @@ export function InvitationList({
 						key={invitation.id}
 					>
 						<div className="flex items-center gap-3">
-							<div className="flex-shrink-0 rounded-full border border-border/30 bg-accent p-2">
+							<div className="shrink-0 rounded-full border border-border/30 bg-accent p-2">
 								<EnvelopeIcon
 									className="h-3 w-3 text-muted-foreground"
 									size={12}
@@ -84,13 +84,13 @@ export function InvitationList({
 									</span>
 								</div>
 								<p className="mt-1 flex items-center gap-1 text-muted-foreground text-xs">
-									<ClockIcon className="h-3 w-3 flex-shrink-0" size={12} />
+									<ClockIcon className="h-3 w-3 shrink-0" size={12} />
 									{invitation.status === "pending" ? "Expires" : "Expired"}{" "}
 									{dayjs(invitation.expiresAt).fromNow()}
 								</p>
 							</div>
 						</div>
-						<div className="flex flex-shrink-0 items-center gap-2">
+						<div className="flex shrink-0 items-center gap-2">
 							{invitation.status === "pending" &&
 								dayjs(invitation.expiresAt).isAfter(dayjs()) && (
 									<Button

@@ -6,13 +6,14 @@ import {
 	PlusIcon,
 	SparkleIcon,
 } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { FaviconImage } from "@/components/analytics/favicon-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Organization } from "@/hooks/use-organizations";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import { cn } from "@/lib/utils";
 
 interface WebsiteSettingsProps {
@@ -30,7 +31,7 @@ function WebsiteLoadingSkeleton() {
 					<CardContent className="p-4">
 						<div className="space-y-3">
 							<div className="flex items-start gap-3">
-								<Skeleton className="h-10 w-10 flex-shrink-0 rounded-full" />
+								<Skeleton className="h-10 w-10 shrink-0 rounded-full" />
 								<div className="min-w-0 flex-1 space-y-1.5">
 									<Skeleton className="h-3 w-32" />
 									<Skeleton className="h-3 w-24" />
@@ -77,13 +78,13 @@ function EnhancedEmptyState() {
 					asChild
 					className={cn(
 						"gap-2 px-6 py-3 font-medium",
-						"bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
+						"bg-linear-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
 						"group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
 					)}
 					size="lg"
 				>
 					<Link href="/websites">
-						<div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
+						<div className="absolute inset-0 translate-x-[-100%] bg-linear-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
 						<PlusIcon className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
 						<span className="relative z-10">Add Website</span>
 					</Link>
@@ -114,10 +115,11 @@ function EnhancedEmptyState() {
 }
 
 export function WebsiteSettings({ organization }: WebsiteSettingsProps) {
-	const { data: websites, isLoading: isLoadingWebsites } =
-		trpc.websites.list.useQuery({
-			organizationId: organization.id,
-		});
+	const { data: websites, isLoading: isLoadingWebsites } = useQuery({
+		...orpc.websites.list.queryOptions({
+			input: { organizationId: organization.id },
+		}),
+	});
 
 	return (
 		<div className="h-full p-4 sm:p-6">
@@ -127,7 +129,7 @@ export function WebsiteSettings({ organization }: WebsiteSettingsProps) {
 					<div className="flex items-center gap-2 rounded-lg border border-muted bg-muted/30 px-3 py-2 text-muted-foreground text-sm">
 						<GlobeIcon
 							aria-hidden="true"
-							className="h-4 w-4 flex-shrink-0"
+							className="h-4 w-4 shrink-0"
 							size={16}
 							weight="duotone"
 						/>
@@ -166,7 +168,7 @@ export function WebsiteSettings({ organization }: WebsiteSettingsProps) {
 											<div className="flex items-start gap-3">
 												<FaviconImage
 													altText={`${website.name} favicon`}
-													className="h-10 w-10 flex-shrink-0 rounded border border-border/30"
+													className="h-10 w-10 shrink-0 rounded border border-border/30"
 													domain={website.domain}
 													fallbackIcon={
 														<div className="flex h-10 w-10 items-center justify-center rounded border border-border/30 bg-accent">

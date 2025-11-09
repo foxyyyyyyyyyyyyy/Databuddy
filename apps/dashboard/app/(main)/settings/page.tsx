@@ -144,7 +144,7 @@ export default function SettingsPage() {
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background via-background to-muted/20">
+			<div className="border-b bg-linear-to-r from-background via-background to-muted/20">
 				<div className="flex h-24 items-center px-4 sm:px-6">
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-4">

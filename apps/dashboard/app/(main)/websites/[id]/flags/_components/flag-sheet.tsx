@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FlagIcon } from "@phosphor-icons/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -34,7 +35,7 @@ import {
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import type { Flag } from "./types";
 import { UserRulesBuilder } from "./user-rules-builder";
 
@@ -112,9 +113,13 @@ export function FlagSheet({
 		},
 	});
 
-	const utils = trpc.useUtils();
-	const createMutation = trpc.flags.create.useMutation();
-	const updateMutation = trpc.flags.update.useMutation();
+	const queryClient = useQueryClient();
+	const createMutation = useMutation({
+		...orpc.flags.create.mutationOptions(),
+	});
+	const updateMutation = useMutation({
+		...orpc.flags.update.mutationOptions(),
+	});
 
 	useEffect(() => {
 		if (isOpen) {
@@ -187,8 +192,10 @@ export function FlagSheet({
 			await mutation.mutateAsync(mutationData as any);
 			toast.success(`Flag ${isEditing ? "updated" : "created"} successfully`);
 
-			// Invalidate to refresh with real server data
-			utils.flags.list.invalidate();
+			queryClient.invalidateQueries({
+				queryKey: orpc.flags.list.queryOptions({ input: { websiteId } })
+					.queryKey,
+			});
 			onClose();
 		} catch (error) {
 			const errorMessage =

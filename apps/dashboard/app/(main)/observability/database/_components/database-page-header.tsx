@@ -74,7 +74,7 @@ export function DatabasePageHeader({
 								{icon}
 							</div>
 							<div>
-								<h1 className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text font-bold text-2xl text-transparent tracking-tight sm:text-3xl">
+								<h1 className="bg-linear-to-r from-foreground to-foreground/80 bg-clip-text font-bold text-2xl text-transparent tracking-tight sm:text-3xl">
 									{title}
 								</h1>
 								{renderSubtitle()}
@@ -98,7 +98,7 @@ export function DatabasePageHeader({
 						)}
 						{onCreateAction && (
 							<Button
-								className="gap-2 bg-gradient-to-r from-primary to-primary/90 shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary hover:shadow-xl"
+								className="gap-2 bg-linear-to-r from-primary to-primary/90 shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary hover:shadow-xl"
 								onClick={onCreateAction}
 							>
 								<PlusIcon />

@@ -309,12 +309,12 @@ export function EditGoalDialog({
 
 						<div className="group flex items-center gap-4 rounded-xl border p-4 transition-all duration-200 hover:border-primary/30 hover:bg-accent/5 hover:shadow-sm">
 							{/* Goal Number */}
-							<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-primary/20 bg-gradient-to-br from-primary to-primary/80 font-semibold text-primary-foreground text-sm shadow-sm transition-all duration-200 group-hover:shadow-md">
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-primary/20 bg-gradient-to-br from-primary to-primary/80 font-semibold text-primary-foreground text-sm shadow-sm transition-all duration-200 group-hover:shadow-md">
 								1
 							</div>
 
 							{/* Goal Icon */}
-							<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-muted/50 transition-all duration-200 group-hover:bg-muted/70">
+							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/50 transition-all duration-200 group-hover:bg-muted/70">
 								{getGoalIcon(formData?.type || "PAGE_VIEW")}
 							</div>
 
@@ -475,7 +475,7 @@ export function EditGoalDialog({
 							Cancel
 						</Button>
 						<Button
-							className="relative rounded-lg bg-gradient-to-r from-primary to-primary/90 shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary hover:shadow-xl"
+							className="relative rounded-lg bg-linear-to-r from-primary to-primary/90 shadow-lg transition-all duration-200 hover:from-primary/90 hover:to-primary hover:shadow-xl"
 							disabled={!isFormValid || isSaving}
 							onClick={handleSubmit}
 						>

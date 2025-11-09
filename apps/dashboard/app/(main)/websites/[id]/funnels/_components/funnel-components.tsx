@@ -148,7 +148,7 @@ export const DraggableStep = memo(
 				}`}
 			>
 				{/* Drag Handle */}
-				<div className="flex-shrink-0 cursor-grab active:cursor-grabbing">
+				<div className="shrink-0 cursor-grab active:cursor-grabbing">
 					<DotsNineIcon
 						className="h-5 w-5 text-muted-foreground transition-colors hover:text-foreground"
 						size={16}
@@ -156,7 +156,7 @@ export const DraggableStep = memo(
 				</div>
 
 				{/* Step Number */}
-				<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-primary/20 bg-gradient-to-br from-primary to-primary/80 font-semibold text-primary-foreground text-sm shadow-sm">
+				<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-primary/20 bg-gradient-to-br from-primary to-primary/80 font-semibold text-primary-foreground text-sm shadow-sm">
 					{index + 1}
 				</div>
 
@@ -192,7 +192,7 @@ export const DraggableStep = memo(
 				{/* Remove Button */}
 				{canRemove && (
 					<Button
-						className="h-8 w-8 flex-shrink-0 rounded-lg p-0 transition-colors hover:bg-destructive/10 hover:text-destructive"
+						className="h-8 w-8 shrink-0 rounded-lg p-0 transition-colors hover:bg-destructive/10 hover:text-destructive"
 						onClick={() => removeStep(index)}
 						size="sm"
 						variant="ghost"

@@ -93,7 +93,7 @@ export function AccountDeletion() {
 
 	return (
 		<div>
-			<div className="flex flex-col justify-between space-y-4 rounded-lg border border-red-900/20 bg-gradient-to-r from-red-950/20 to-red-900/10 p-4 md:flex-row md:items-center md:space-x-6 md:space-y-0">
+			<div className="flex flex-col justify-between space-y-4 rounded-lg border border-red-900/20 bg-linear-to-r from-red-950/20 to-red-900/10 p-4 md:flex-row md:items-center md:space-x-6 md:space-y-0">
 				<div className="flex-1 space-y-2">
 					<div className="flex items-center">
 						<ShieldCheckIcon
@@ -147,7 +147,7 @@ export function AccountDeletion() {
 							<div className="space-y-3 text-slate-300 text-sm">
 								<div className="flex items-start">
 									<InfoIcon
-										className="mt-0.5 mr-2 h-4 w-4 flex-shrink-0 text-red-400"
+										className="mt-0.5 mr-2 h-4 w-4 shrink-0 text-red-400"
 										size={16}
 										weight="duotone"
 									/>
@@ -161,7 +161,7 @@ export function AccountDeletion() {
 								</div>
 								<div className="flex items-start">
 									<InfoIcon
-										className="mt-0.5 mr-2 h-4 w-4 flex-shrink-0 text-red-400"
+										className="mt-0.5 mr-2 h-4 w-4 shrink-0 text-red-400"
 										size={16}
 										weight="duotone"
 									/>
@@ -175,7 +175,7 @@ export function AccountDeletion() {
 								</div>
 								<div className="flex items-start">
 									<InfoIcon
-										className="mt-0.5 mr-2 h-4 w-4 flex-shrink-0 text-red-400"
+										className="mt-0.5 mr-2 h-4 w-4 shrink-0 text-red-400"
 										size={16}
 										weight="duotone"
 									/>

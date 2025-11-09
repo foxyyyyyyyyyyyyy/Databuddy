@@ -27,7 +27,7 @@ function WebsiteCard({
 		>
 			<FaviconImage
 				altText={`${website.name} favicon`}
-				className="flex-shrink-0 rounded"
+				className="shrink-0 rounded"
 				domain={website.domain}
 				fallbackIcon={
 					<div className="rounded bg-primary/10 p-1">

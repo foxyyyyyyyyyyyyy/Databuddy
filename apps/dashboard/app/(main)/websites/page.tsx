@@ -132,7 +132,7 @@ export default function WebsitesPage() {
 						<Button
 							className={cn(
 								"gap-2 px-3 py-2 font-medium sm:px-4 sm:py-2",
-								"bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
+								"bg-linear-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary",
 								"group relative overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
 							)}
 							data-button-type="primary"
@@ -141,7 +141,7 @@ export default function WebsitesPage() {
 							onClick={() => setDialogOpen(true)}
 							size="default"
 						>
-							<div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
+							<div className="absolute inset-0 translate-x-[-100%] bg-linear-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%]" />
 							<PlusIcon className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
 							<span className="relative z-10 truncate">New Website</span>
 						</Button>
@@ -160,7 +160,7 @@ export default function WebsitesPage() {
 						<div className="flex items-center gap-2 rounded-lg border border-muted bg-muted/30 px-3 py-2 text-muted-foreground text-sm">
 							<GlobeIcon
 								aria-hidden="true"
-								className="h-4 w-4 flex-shrink-0"
+								className="h-4 w-4 shrink-0"
 								size={24}
 								weight="duotone"
 							/>

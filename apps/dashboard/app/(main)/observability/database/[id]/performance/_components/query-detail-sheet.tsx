@@ -306,7 +306,7 @@ Resource Usage:
 								{query.mean_exec_time > 100 && (
 									<div className="rounded border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-950/20">
 										<div className="flex items-start gap-3">
-											<div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full bg-orange-500" />
+											<div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-orange-500" />
 											<div className="min-w-0">
 												<p className="font-medium text-orange-900 dark:text-orange-100">
 													Slow Query Detected
@@ -323,7 +323,7 @@ Resource Usage:
 								{query.cache_hit_ratio < 90 && (
 									<div className="rounded border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/20">
 										<div className="flex items-start gap-3">
-											<div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
+											<div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
 											<div className="min-w-0">
 												<p className="font-medium text-foreground">
 													Low Cache Hit Rate
@@ -340,7 +340,7 @@ Resource Usage:
 								{query.calls > 10_000 && (
 									<div className="rounded border border-purple-200 bg-purple-50 p-4 dark:border-purple-800 dark:bg-purple-950/20">
 										<div className="flex items-start gap-3">
-											<div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full bg-purple-500" />
+											<div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-purple-500" />
 											<div className="min-w-0">
 												<p className="font-medium text-purple-900 dark:text-purple-100">
 													High Frequency Query
@@ -357,7 +357,7 @@ Resource Usage:
 								{query.percentage_of_total_time > 10 && (
 									<div className="rounded border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20">
 										<div className="flex items-start gap-3">
-											<div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full bg-red-500" />
+											<div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
 											<div className="min-w-0">
 												<p className="font-medium text-red-900 dark:text-red-100">
 													Resource Intensive Query
@@ -376,7 +376,7 @@ Resource Usage:
 									query.percentage_of_total_time <= 5 && (
 										<div className="rounded border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/20">
 											<div className="flex items-start gap-3">
-												<div className="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full bg-green-500" />
+												<div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-green-500" />
 												<div className="min-w-0">
 													<p className="font-medium text-green-900 dark:text-green-100">
 														Well Optimized Query

@@ -130,7 +130,7 @@ export const METRIC_COLORS = {
 	),
 } as const;
 
-export interface ChartDataRow {
+export type ChartDataRow = {
 	date: string;
 	pageviews?: number;
 	visitors?: number;
@@ -157,9 +157,9 @@ export interface ChartDataRow {
 	p50_inp?: number;
 	measurements?: number;
 	[key: string]: unknown;
-}
+};
 
-export interface MetricConfig {
+export type MetricConfig = {
 	key: string;
 	label: string;
 	color: string;

@@ -138,7 +138,7 @@ export function ExtensionCard({
 								{extension.description}
 							</p>
 						</div>
-						<div className="ml-3 flex-shrink-0">
+						<div className="ml-3 shrink-0">
 							<ExtensionBadges extension={extension} type={type} />
 						</div>
 					</div>
@@ -175,7 +175,7 @@ export function ExtensionCard({
 						<div>
 							{type === "available" && onInstall && (
 								<Button
-									className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+									className="bg-linear-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
 									disabled={!canManage || isLoading}
 									onClick={onInstall}
 									size="sm"

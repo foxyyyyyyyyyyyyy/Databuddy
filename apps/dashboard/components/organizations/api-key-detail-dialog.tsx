@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
@@ -172,10 +173,10 @@ function ApiKeyActions({
 	onShowSecret,
 }: {
 	keyId: string | null;
-	rotateMutation: ReturnType<typeof trpc.apikeys.rotate.useMutation>;
-	revokeMutation: ReturnType<typeof trpc.apikeys.revoke.useMutation>;
-	deleteMutation: ReturnType<typeof trpc.apikeys.delete.useMutation>;
-	updateMutation: ReturnType<typeof trpc.apikeys.update.useMutation>;
+	rotateMutation: ReturnType<typeof useMutation>;
+	revokeMutation: ReturnType<typeof useMutation>;
+	deleteMutation: ReturnType<typeof useMutation>;
+	updateMutation: ReturnType<typeof useMutation>;
 	onShowSecret: (secret: string) => void;
 }) {
 	return (
@@ -231,28 +232,44 @@ export function ApiKeyDetailDialog({
 	open,
 	onOpenChange,
 }: ApiKeyDetailDialogProps) {
-	const utils = trpc.useUtils();
-	const { data, isLoading } = trpc.apikeys.getById.useQuery(
-		{ id: keyId ?? "" },
-		{ enabled: !!keyId }
-	);
-	const rotateMutation = trpc.apikeys.rotate.useMutation({
+	const queryClient = useQueryClient();
+	const { data, isLoading } = useQuery({
+		...orpc.apikeys.getById.queryOptions({ input: { id: keyId ?? "" } }),
+		enabled: !!keyId,
+	});
+	const rotateMutation = useMutation({
+		...orpc.apikeys.rotate.mutationOptions(),
 		onSuccess: async () => {
 			if (keyId) {
-				await utils.apikeys.getById.invalidate({ id: keyId });
+				queryClient.invalidateQueries({
+					queryKey: orpc.apikeys.getById.queryOptions({ input: { id: keyId } })
+						.queryKey,
+				});
 			}
-			await utils.apikeys.list.invalidate();
+			queryClient.invalidateQueries({
+				queryKey: orpc.apikeys.list.queryOptions({ input: {} }).queryKey,
+			});
 		},
 	});
-	const revokeMutation = trpc.apikeys.revoke.useMutation({
+	const revokeMutation = useMutation({
+		...orpc.apikeys.revoke.mutationOptions(),
 		onSuccess: async () => {
-			await utils.apikeys.getById.invalidate({ id: keyId as string });
-			await utils.apikeys.list.invalidate();
+			queryClient.invalidateQueries({
+				queryKey: orpc.apikeys.getById.queryOptions({
+					input: { id: keyId as string },
+				}).queryKey,
+			});
+			queryClient.invalidateQueries({
+				queryKey: orpc.apikeys.list.queryOptions({ input: {} }).queryKey,
+			});
 		},
 	});
-	const deleteMutation = trpc.apikeys.delete.useMutation({
+	const deleteMutation = useMutation({
+		...orpc.apikeys.delete.mutationOptions(),
 		onSuccess: async () => {
-			await utils.apikeys.list.invalidate();
+			queryClient.invalidateQueries({
+				queryKey: orpc.apikeys.list.queryOptions({ input: {} }).queryKey,
+			});
 			onOpenChange(false);
 		},
 	});
@@ -290,10 +307,17 @@ export function ApiKeyDetailDialog({
 		});
 	}, [detail, form]);
 
-	const updateMutation = trpc.apikeys.update.useMutation({
+	const updateMutation = useMutation({
+		...orpc.apikeys.update.mutationOptions(),
 		onSuccess: async () => {
-			await utils.apikeys.getById.invalidate({ id: keyId as string });
-			await utils.apikeys.list.invalidate();
+			queryClient.invalidateQueries({
+				queryKey: orpc.apikeys.getById.queryOptions({
+					input: { id: keyId as string },
+				}).queryKey,
+			});
+			queryClient.invalidateQueries({
+				queryKey: orpc.apikeys.list.queryOptions({ input: {} }).queryKey,
+			});
 		},
 	});
 

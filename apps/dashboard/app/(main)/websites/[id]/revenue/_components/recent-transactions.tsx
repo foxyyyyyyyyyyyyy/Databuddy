@@ -19,7 +19,7 @@ interface RecentTransactionsProps {
 }
 
 const TransactionSkeleton = () => (
-	<div className="flex items-center justify-between rounded-lg border border-border/50 bg-gradient-to-r from-background to-muted/10 p-4">
+	<div className="flex items-center justify-between rounded-lg border border-border/50 bg-linear-to-r from-background to-muted/10 p-4">
 		<div className="flex items-center gap-3">
 			<Skeleton className="h-10 w-10 rounded-lg" />
 			<div className="space-y-2">
@@ -84,7 +84,7 @@ export function RecentTransactions({
 		<div className="space-y-3">
 			{data.map((transaction) => (
 				<div
-					className="group flex items-center justify-between rounded-lg border border-border/50 bg-gradient-to-r from-background to-muted/10 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10"
+					className="group flex items-center justify-between rounded-lg border border-border/50 bg-linear-to-r from-background to-muted/10 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-linear-to-r hover:from-primary/5 hover:to-primary/10"
 					key={transaction.id}
 				>
 					<div className="flex items-center gap-3">

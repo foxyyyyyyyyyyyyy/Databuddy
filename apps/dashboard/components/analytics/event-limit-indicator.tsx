@@ -1,15 +1,17 @@
 "use client";
 
 import { WarningIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 
 export function EventLimitIndicator() {
 	const router = useRouter();
-	const { data } = trpc.organizations.getUsage.useQuery();
+	const { data } = useQuery({
+		...orpc.organizations.getUsage.queryOptions(),
+	});
 
-	// Only show if there's usage and it's concerning
 	if (!data || data.unlimited || !data.used) {
 		return null;
 	}

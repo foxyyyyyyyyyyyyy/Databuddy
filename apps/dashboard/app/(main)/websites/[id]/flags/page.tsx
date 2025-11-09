@@ -2,6 +2,7 @@
 
 import { useFlags } from "@databuddy/sdk/react";
 import { FlagIcon, InfoIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { useParams } from "next/navigation";
 import { Suspense, useCallback, useState } from "react";
@@ -13,7 +14,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useWebsite } from "@/hooks/use-websites";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import { isAnalyticsRefreshingAtom } from "@/stores/jotai/filterAtoms";
 import { WebsitePageHeader } from "../_components/website-page-header";
 import { FlagSheet } from "./_components/flag-sheet";
@@ -70,8 +71,8 @@ export default function FlagsPage() {
 		isLoading,
 		error: flagsError,
 		refetch: refetchFlags,
-	} = trpc.flags.list.useQuery({
-		websiteId,
+	} = useQuery({
+		...orpc.flags.list.queryOptions({ input: { websiteId } }),
 	});
 
 	const handleRefresh = useCallback(async () => {

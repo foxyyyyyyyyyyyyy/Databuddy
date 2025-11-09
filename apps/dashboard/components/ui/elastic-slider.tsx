@@ -124,7 +124,7 @@ export function Slider({
 			>
 				{/* Left Icon */}
 				<motion.div
-					className="flex-shrink-0 text-muted-foreground"
+					className="shrink-0 text-muted-foreground"
 					style={{
 						x: useTransform(() =>
 							region === 'left' ? -overflow.get() / 2 : 0
@@ -192,7 +192,7 @@ export function Slider({
 
 				{/* Right Icon */}
 				<motion.div
-					className="flex-shrink-0 text-muted-foreground"
+					className="shrink-0 text-muted-foreground"
 					style={{
 						x: useTransform(() =>
 							region === 'right' ? overflow.get() / 2 : 0

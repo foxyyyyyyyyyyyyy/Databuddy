@@ -1,5 +1,5 @@
 import { chQuery } from "@databuddy/db";
-import { TRPCError } from "@trpc/server";
+import { ORPCError } from "@orpc/server";
 
 export type AnalyticsStep = {
 	step_number: number;
@@ -273,8 +273,7 @@ export const processGoalAnalytics = async (
 	);
 
 	if (errors.length > 0) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
+		throw new ORPCError("BAD_REQUEST", {
 			message: `Invalid filters: ${errors.join(", ")}`,
 		});
 	}
@@ -587,8 +586,7 @@ export const processFunnelAnalytics = async (
 	);
 
 	if (errors.length > 0) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
+		throw new ORPCError("BAD_REQUEST", {
 			message: `Invalid filters: ${errors.join(", ")}`,
 		});
 	}
@@ -843,8 +841,7 @@ export const processFunnelAnalyticsByReferrer = async (
 	);
 
 	if (errors.length > 0) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
+		throw new ORPCError("BAD_REQUEST", {
 			message: `Invalid filters: ${errors.join(", ")}`,
 		});
 	}

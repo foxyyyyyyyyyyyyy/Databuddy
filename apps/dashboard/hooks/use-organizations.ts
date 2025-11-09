@@ -1,7 +1,7 @@
 import { authClient } from "@databuddy/auth/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 
 export type OrganizationRole = "owner" | "admin" | "member";
 
@@ -128,25 +128,25 @@ export function useOrganizations() {
 		)
 	);
 
-	const uploadOrganizationLogoMutation =
-		trpc.organizations.uploadLogo.useMutation({
-			onSuccess: () => {
-				toast.success("Logo uploaded successfully");
-			},
-			onError: (error) => {
-				toast.error(error.message || "Failed to upload logo");
-			},
-		});
+	const uploadOrganizationLogoMutation = useMutation({
+		...orpc.organizations.uploadLogo.mutationOptions(),
+		onSuccess: () => {
+			toast.success("Logo uploaded successfully");
+		},
+		onError: (error) => {
+			toast.error(error instanceof Error ? error.message : "Failed to upload logo");
+		},
+	});
 
-	const deleteOrganizationLogoMutation =
-		trpc.organizations.deleteLogo.useMutation({
-			onSuccess: () => {
-				toast.success("Logo deleted successfully");
-			},
-			onError: (error) => {
-				toast.error(error.message || "Failed to delete logo");
-			},
-		});
+	const deleteOrganizationLogoMutation = useMutation({
+		...orpc.organizations.deleteLogo.mutationOptions(),
+		onSuccess: () => {
+			toast.success("Logo deleted successfully");
+		},
+		onError: (error) => {
+			toast.error(error instanceof Error ? error.message : "Failed to delete logo");
+		},
+	});
 
 	const deleteOrganizationMutation = useMutation(
 		createMutation(

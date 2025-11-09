@@ -177,10 +177,7 @@ export function PublicIcon({
 
 	return (
 		<div
-			className={cn(
-				"relative flex-shrink-0 overflow-hidden rounded",
-				className
-			)}
+			className={cn("relative shrink-0 overflow-hidden rounded", className)}
 			style={{
 				width: iconSize,
 				height: iconSize,
@@ -267,10 +264,7 @@ export function CountryFlag({
 
 	return (
 		<div
-			className={cn(
-				"relative flex-shrink-0 overflow-hidden rounded-sm",
-				className
-			)}
+			className={cn("relative shrink-0 overflow-hidden rounded-sm", className)}
 			style={{ width: 24, height: iconSize, minWidth: 24, minHeight: iconSize }}
 		>
 			<Image

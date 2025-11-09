@@ -1,9 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -115,7 +116,7 @@ export function ApiKeyCreateDialog({
 	defaultResource,
 	onCreated,
 }: ApiKeyCreateDialogProps) {
-	const utils = trpc.useUtils();
+	const queryClient = useQueryClient();
 	const [createdInfo, setCreatedInfo] = useState<{
 		id: string;
 		secret: string;
@@ -144,14 +145,19 @@ export function ApiKeyCreateDialog({
 		setShowCreatedDialog(false);
 	};
 
-	const createMutation = trpc.apikeys.create.useMutation({
+	const createMutation = useMutation({
+		...orpc.apikeys.create.mutationOptions(),
 		onSuccess: async (res: {
 			id: string;
 			secret: string;
 			prefix: string;
 			start: string;
 		}) => {
-			await utils.apikeys.list.invalidate({ organizationId });
+			queryClient.invalidateQueries({
+				queryKey: orpc.apikeys.list.queryOptions({
+					input: { organizationId },
+				}).queryKey,
+			});
 			setCreatedInfo(res);
 			setShowCreatedDialog(true);
 			onCreated?.(res);
@@ -181,7 +187,9 @@ export function ApiKeyCreateDialog({
 				]
 			: []
 	);
-	const { data: websites } = trpc.websites.list.useQuery({ organizationId });
+	const { data: websites } = useQuery({
+		...orpc.websites.list.queryOptions({ input: { organizationId } }),
+	});
 	const [websiteToAdd, setWebsiteToAdd] = useState<string | undefined>(
 		undefined
 	);

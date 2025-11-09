@@ -81,18 +81,14 @@ export function NavigationItem({
 					fallbackIcon={
 						<Icon
 							aria-hidden="true"
-							className="size-5 flex-shrink-0"
+							className="size-5 shrink-0"
 							weight="duotone"
 						/>
 					}
 					size={20}
 				/>
 			) : (
-				<Icon
-					aria-hidden="true"
-					className="size-5 flex-shrink-0"
-					weight="duotone"
-				/>
+				<Icon aria-hidden="true" className="size-5 shrink-0" weight="duotone" />
 			)}
 			<span className="flex-1">{name}</span>
 		</>

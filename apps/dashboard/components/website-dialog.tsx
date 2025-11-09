@@ -1,6 +1,7 @@
 "use client";
 
 import { authClient } from "@databuddy/auth/client";
+import type { InferSelectModel, websites } from "@databuddy/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -25,15 +26,21 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { CreateWebsiteData, Website } from "@/hooks/use-websites";
 import { useCreateWebsite, useUpdateWebsite } from "@/hooks/use-websites";
 
-interface UpdateWebsiteInput {
+type UpdateWebsiteInput = {
 	id: string;
 	name: string;
 	domain?: string;
 	isPublic?: boolean;
-}
+};
+
+type CreateWebsiteData = {
+	name: string;
+	domain: string;
+	subdomain?: string;
+	organizationId?: string;
+};
 
 const domainRegex =
 	/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}$/;
@@ -48,13 +55,13 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
-
-interface WebsiteDialogProps {
+export type { CreateWebsiteData };
+type WebsiteDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	website?: Website | null;
-	onSave?: (website: Website) => void;
-}
+	website?: InferSelectModel<typeof websites> | null;
+	onSave?: (website: InferSelectModel<typeof websites>) => void;
+};
 
 export function WebsiteDialog({
 	open,
@@ -88,33 +95,32 @@ export function WebsiteDialog({
 	const getErrorMessage = (error: unknown, isEditingMode: boolean): string => {
 		const defaultMessage = `Failed to ${isEditingMode ? "update" : "create"} website.`;
 
-		// Type guard for TRPC error
-		const trpcError = error as {
+		const rpcError = error as {
 			data?: { code?: string };
 			message?: string;
 		};
 
-		if (trpcError?.data?.code) {
-			switch (trpcError.data.code) {
+		if (rpcError?.data?.code) {
+			switch (rpcError.data.code) {
 				case "CONFLICT":
 					return "A website with this domain already exists.";
 				case "FORBIDDEN":
 					return (
-						trpcError.message ||
+						rpcError.message ||
 						"You do not have permission to perform this action."
 					);
 				case "UNAUTHORIZED":
 					return "You must be logged in to perform this action.";
 				case "BAD_REQUEST":
 					return (
-						trpcError.message || "Invalid request. Please check your input."
+						rpcError.message || "Invalid request. Please check your input."
 					);
 				default:
-					return trpcError.message || defaultMessage;
+					return rpcError.message || defaultMessage;
 			}
 		}
 
-		return trpcError?.message || defaultMessage;
+		return rpcError?.message || defaultMessage;
 	};
 
 	const handleSubmit = form.handleSubmit(async (formData) => {

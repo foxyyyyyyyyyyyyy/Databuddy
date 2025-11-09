@@ -1,14 +1,9 @@
-import { account, db } from "@databuddy/db";
-import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { account, and, db, eq } from "@databuddy/db";
+import { ORPCError } from "@orpc/server";
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { protectedProcedure } from "../orpc";
 
-const disconnectIntegrationSchema = z.object({
-	provider: z.enum(["vercel"]),
-});
-
-export interface IntegrationInfo {
+export type IntegrationInfo = {
 	id: string;
 	provider: string;
 	accountId: string;
@@ -18,13 +13,15 @@ export interface IntegrationInfo {
 	metadata?: Record<string, unknown>;
 }
 
-export const integrationsRouter = createTRPCRouter({
-	// Get all integrations for the current user
-	getIntegrations: protectedProcedure.query(async ({ ctx }) => {
-		try {
-			const userId = ctx.user.id;
+const disconnectIntegrationSchema = z.object({
+	provider: z.enum(["vercel"]),
+});
 
-			// Get all connected accounts for the user
+export const integrationsRouter = {
+	getIntegrations: protectedProcedure.handler(async ({ context }) => {
+		try {
+			const userId = context.user.id;
+
 			const connectedAccounts = await db
 				.select({
 					id: account.id,
@@ -59,11 +56,11 @@ export const integrationsRouter = createTRPCRouter({
 					connected: !!connectedAccount,
 					connectionInfo: connectedAccount
 						? {
-								id: connectedAccount.id,
-								accountId: connectedAccount.accountId,
-								connectedAt: connectedAccount.createdAt,
-								scope: connectedAccount.scope,
-							}
+							id: connectedAccount.id,
+							accountId: connectedAccount.accountId,
+							connectedAt: connectedAccount.createdAt,
+							scope: connectedAccount.scope,
+						}
 						: null,
 				};
 			});
@@ -74,8 +71,7 @@ export const integrationsRouter = createTRPCRouter({
 			};
 		} catch (error) {
 			console.error("Error fetching integrations:", error);
-			throw new TRPCError({
-				code: "INTERNAL_SERVER_ERROR",
+			throw new ORPCError("INTERNAL_SERVER_ERROR", {
 				message: "Failed to fetch integrations",
 			});
 		}
@@ -84,9 +80,9 @@ export const integrationsRouter = createTRPCRouter({
 	// Get specific integration details
 	getIntegration: protectedProcedure
 		.input(z.object({ provider: z.enum(["vercel"]) }))
-		.query(async ({ input, ctx }) => {
+		.handler(async ({ input, context }) => {
 			try {
-				const userId = ctx.user.id;
+				const userId = context.user.id;
 
 				const connectedAccount = await db
 					.select({
@@ -135,8 +131,7 @@ export const integrationsRouter = createTRPCRouter({
 				};
 			} catch (error) {
 				console.error("Error fetching integration:", error);
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to fetch integration details",
 				});
 			}
@@ -145,9 +140,9 @@ export const integrationsRouter = createTRPCRouter({
 	// Disconnect an integration
 	disconnect: protectedProcedure
 		.input(disconnectIntegrationSchema)
-		.mutation(async ({ input, ctx }) => {
+		.handler(async ({ input, context }) => {
 			try {
-				const userId = ctx.user.id;
+				const userId = context.user.id;
 
 				// Find the connected account
 				const connectedAccount = await db
@@ -162,8 +157,7 @@ export const integrationsRouter = createTRPCRouter({
 					.limit(1);
 
 				if (!connectedAccount.length) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
+					throw new ORPCError("NOT_FOUND", {
 						message: "Integration not found or not connected",
 					});
 				}
@@ -178,21 +172,20 @@ export const integrationsRouter = createTRPCRouter({
 			} catch (error) {
 				console.error("Error disconnecting integration:", error);
 
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
 					message: "Failed to disconnect integration",
 				});
 			}
 		}),
 
 	// Get integration statistics
-	getStats: protectedProcedure.query(async ({ ctx }) => {
+	getStats: protectedProcedure.handler(async ({ context }) => {
 		try {
-			const userId = ctx.user.id;
+			const userId = context.user.id;
 
 			const connectedAccounts = await db
 				.select({
@@ -226,10 +219,9 @@ export const integrationsRouter = createTRPCRouter({
 			return stats;
 		} catch (error) {
 			console.error("Error fetching integration stats:", error);
-			throw new TRPCError({
-				code: "INTERNAL_SERVER_ERROR",
+			throw new ORPCError("INTERNAL_SERVER_ERROR", {
 				message: "Failed to fetch integration statistics",
 			});
 		}
 	}),
-});
+};

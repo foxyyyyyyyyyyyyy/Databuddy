@@ -2,8 +2,8 @@ import { websitesApi } from "@databuddy/auth";
 import { db, dbConnections, eq, websites } from "@databuddy/db";
 import { cacheable } from "@databuddy/redis";
 import { logger } from "@databuddy/shared/utils/discord-webhook";
-import { TRPCError } from "@trpc/server";
-import type { Context } from "../trpc";
+import { ORPCError } from "@orpc/server";
+import type { Context } from "../orpc";
 
 type Permission = "read" | "update" | "delete" | "transfer";
 
@@ -56,7 +56,7 @@ const getDbConnectionById = async (id: string) => {
  * It verifies if a user has the required permissions for a specific website,
  * checking for ownership or organization roles.
  *
- * @throws {TRPCError} if the user is not authorized.
+ * @throws {ORPCError} if the user is not authorized.
  */
 export async function authorizeWebsiteAccess(
 	ctx: Context,
@@ -66,7 +66,7 @@ export async function authorizeWebsiteAccess(
 	const website = await getWebsiteById(websiteId);
 
 	if (!website) {
-		throw new TRPCError({ code: "NOT_FOUND", message: "Website not found." });
+		throw new ORPCError("NOT_FOUND", { message: "Website not found." });
 	}
 
 	if (permission === "read" && website.isPublic) {
@@ -74,8 +74,7 @@ export async function authorizeWebsiteAccess(
 	}
 
 	if (!ctx.user) {
-		throw new TRPCError({
-			code: "UNAUTHORIZED",
+		throw new ORPCError("UNAUTHORIZED", {
 			message: "Authentication is required for this action.",
 		});
 	}
@@ -90,14 +89,12 @@ export async function authorizeWebsiteAccess(
 			body: { permissions: { website: [permission] } },
 		});
 		if (!success) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
+			throw new ORPCError("FORBIDDEN", {
 				message: "You do not have permission to perform this action.",
 			});
 		}
 	} else if (website.userId !== ctx.user.id) {
-		throw new TRPCError({
-			code: "FORBIDDEN",
+		throw new ORPCError("FORBIDDEN", {
 			message: "You are not the owner of this website.",
 		});
 	}
@@ -110,7 +107,7 @@ export async function authorizeWebsiteAccess(
  * It verifies if a user has the required permissions for a specific database connection,
  * checking for ownership or organization roles.
  *
- * @throws {TRPCError} if the user is not authorized.
+ * @throws {ORPCError} if the user is not authorized.
  */
 export async function authorizeDbConnectionAccess(
 	ctx: Context,
@@ -120,15 +117,13 @@ export async function authorizeDbConnectionAccess(
 	const connection = await getDbConnectionById(connectionId);
 
 	if (!connection) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
+		throw new ORPCError("NOT_FOUND", {
 			message: "Database connection not found.",
 		});
 	}
 
 	if (!ctx.user) {
-		throw new TRPCError({
-			code: "UNAUTHORIZED",
+		throw new ORPCError("UNAUTHORIZED", {
 			message: "Authentication is required for this action.",
 		});
 	}
@@ -143,14 +138,12 @@ export async function authorizeDbConnectionAccess(
 			body: { permissions: { website: [permission] } },
 		});
 		if (!success) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
+			throw new ORPCError("FORBIDDEN", {
 				message: "You do not have permission to perform this action.",
 			});
 		}
 	} else if (connection.userId !== ctx.user.id) {
-		throw new TRPCError({
-			code: "FORBIDDEN",
+		throw new ORPCError("FORBIDDEN", {
 			message: "You are not the owner of this database connection.",
 		});
 	}

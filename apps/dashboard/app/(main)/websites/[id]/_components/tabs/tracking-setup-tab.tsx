@@ -1,11 +1,12 @@
 "use client";
 
 import { BookOpenIcon, ChatCircleIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import {
 	toggleTrackingOptionAtom,
 	trackingOptionsAtom,
@@ -49,18 +50,15 @@ export function WebsiteTrackingSetupTab({ websiteId }: WebsiteDataTabProps) {
 		toggleTrackingOptionAction(option);
 	};
 
-	const utils = trpc.useUtils();
-	const { data: trackingSetupData, refetch: refetchTrackingSetup } =
-		trpc.websites.isTrackingSetup.useQuery(
-			{ websiteId },
-			{ enabled: !!websiteId }
-		);
+	const { data: trackingSetupData, refetch: refetchTrackingSetup } = useQuery({
+		...orpc.websites.isTrackingSetup.queryOptions({ input: { websiteId } }),
+		enabled: !!websiteId,
+	});
 
 	const handleRefresh = async () => {
 		toast.success("Checking tracking status...");
 
 		try {
-			await utils.websites.isTrackingSetup.invalidate({ websiteId });
 			const result = await refetchTrackingSetup();
 
 			if (result.data?.tracking_setup) {

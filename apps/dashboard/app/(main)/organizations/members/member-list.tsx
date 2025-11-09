@@ -138,7 +138,7 @@ export function MemberList({
 							key={member.id}
 						>
 							<div className="flex items-center gap-3">
-								<Avatar className="h-8 w-8 flex-shrink-0 border border-border/30">
+								<Avatar className="h-8 w-8 shrink-0 border border-border/30">
 									<AvatarImage
 										alt={member.user.name}
 										src={member.user.image || undefined}
@@ -154,7 +154,7 @@ export function MemberList({
 										</p>
 										{member.role === "owner" && (
 											<CrownIcon
-												className="h-3 w-3 flex-shrink-0 text-amber-500"
+												className="h-3 w-3 shrink-0 text-amber-500"
 												size={12}
 											/>
 										)}
@@ -163,12 +163,12 @@ export function MemberList({
 										{member.user.email}
 									</p>
 									<p className="mt-1 flex items-center gap-1 text-muted-foreground text-xs">
-										<ClockIcon className="h-3 w-3 flex-shrink-0" size={12} />
+										<ClockIcon className="h-3 w-3 shrink-0" size={12} />
 										Joined {dayjs(member.createdAt).fromNow()}
 									</p>
 								</div>
 							</div>
-							<div className="flex flex-shrink-0 items-center gap-2">
+							<div className="flex shrink-0 items-center gap-2">
 								<RoleSelector
 									isUpdatingMember={isUpdatingMember}
 									member={member}

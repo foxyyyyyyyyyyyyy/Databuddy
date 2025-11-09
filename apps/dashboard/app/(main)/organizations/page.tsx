@@ -14,7 +14,7 @@ function OrganizationsSkeleton() {
 					<Card className="animate-pulse" key={`org-skeleton-${i.toString()}`}>
 						<CardContent className="p-4 sm:p-6">
 							<div className="flex items-center gap-3 sm:gap-4">
-								<Skeleton className="h-10 w-10 flex-shrink-0 rounded-full sm:h-12 sm:w-12" />
+								<Skeleton className="h-10 w-10 shrink-0 rounded-full sm:h-12 sm:w-12" />
 								<div className="min-w-0 flex-1 space-y-2">
 									<Skeleton className="h-3 w-28 sm:h-4 sm:w-32" />
 									<Skeleton className="h-3 w-20 sm:h-3 sm:w-24" />

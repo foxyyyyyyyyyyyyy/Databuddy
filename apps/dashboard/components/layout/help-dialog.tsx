@@ -9,10 +9,10 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 
-interface HelpDialogProps {
+type HelpDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-}
+};
 
 const helpItems = [
 	{

@@ -72,12 +72,12 @@ function EventItem({
 			key={event.event_id || eventIndex}
 		>
 			<div
-				className={`flex h-8 w-8 items-center justify-center rounded-full border-2 bg-card font-bold text-xs ${color} flex-shrink-0 shadow-sm`}
+				className={`flex h-8 w-8 items-center justify-center rounded-full border-2 bg-card font-bold text-xs ${color} shrink-0 shadow-sm`}
 			>
 				{eventIndex + 1}
 			</div>
 			<div className="flex min-w-0 flex-1 items-start gap-3">
-				<div className={`${color} mt-1 flex-shrink-0`}>{icon}</div>
+				<div className={`${color} mt-1 shrink-0`}>{icon}</div>
 				<div className="min-w-0 flex-1">
 					<div className="mb-2 flex items-start justify-between gap-2">
 						<div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -99,7 +99,7 @@ function EventItem({
 								</Badge>
 							)}
 						</div>
-						<div className="flex-shrink-0 whitespace-nowrap font-medium text-muted-foreground text-xs">
+						<div className="shrink-0 whitespace-nowrap font-medium text-muted-foreground text-xs">
 							{new Date(event.time).toLocaleTimeString()}
 						</div>
 					</div>

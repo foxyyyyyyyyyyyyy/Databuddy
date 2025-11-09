@@ -1,10 +1,11 @@
 "use client";
 
 import { CaretDownIcon, CaretUpIcon, FlagIcon } from "@phosphor-icons/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import { FlagActions } from "./flag-actions";
 import type { Flag } from "./types";
 
@@ -25,7 +26,7 @@ export function FlagRow({
 }: FlagRowProps) {
 	const [_isArchiving, _setIsArchiving] = useState(false);
 
-	const utils = trpc.useUtils();
+	const queryClient = useQueryClient();
 
 	const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		const target = e.target as HTMLElement;
@@ -142,7 +143,13 @@ export function FlagRow({
 				<div className="flex items-center gap-2">
 					<FlagActions
 						flag={flag}
-						onDeleted={() => utils.flags.list.invalidate()}
+						onDeleted={() => {
+							queryClient.invalidateQueries({
+								queryKey: orpc.flags.list.queryOptions({
+									input: { websiteId: flag.websiteId ?? "" },
+								}).queryKey,
+							});
+						}}
 						onEdit={() => onEdit()}
 					/>
 					{onToggle && (

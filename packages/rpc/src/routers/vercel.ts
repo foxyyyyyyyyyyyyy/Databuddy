@@ -1,16 +1,15 @@
 import { websitesApi } from "@databuddy/auth";
-import { account, websites } from "@databuddy/db";
-import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { account, and, eq, websites } from "@databuddy/db";
+import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { VercelSDK } from "../lib/vercel-sdk";
+import { protectedProcedure } from "../orpc";
 import {
 	buildWebsiteFilter,
 	domainSchema,
 	WebsiteService,
 	websiteNameSchema,
 } from "../services/website-service";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 const ENV_KEY = "NEXT_PUBLIC_DATABUDDY_CLIENT_ID";
 const WWW_REGEX = /^www\./;
@@ -71,15 +70,15 @@ const buildDomainIntegrationStatus = (
 	const relevantEnvVars = domainMatchedEnvVars.length
 		? domainMatchedEnvVars
 		: databeddyEnvVars.filter((envVar) => {
-				if (!envVar.target?.length) {
-					return true;
-				}
+			if (!envVar.target?.length) {
+				return true;
+			}
 
-				const hasProductionTarget = envVar.target.includes("production");
-				const hasPreviewTarget = envVar.target.includes("preview");
+			const hasProductionTarget = envVar.target.includes("production");
+			const hasPreviewTarget = envVar.target.includes("preview");
 
-				return hasPreviewTarget || hasProductionTarget;
-			});
+			return hasPreviewTarget || hasProductionTarget;
+		});
 
 	if (relevantEnvVars.length) {
 		const envVar = relevantEnvVars[0];
@@ -204,8 +203,7 @@ const getVercelToken = async (userId: string, db: any): Promise<string> => {
 	});
 
 	if (!vercelAccount?.accessToken) {
-		throw new TRPCError({
-			code: "UNAUTHORIZED",
+		throw new ORPCError("UNAUTHORIZED", {
 			message:
 				"No Vercel account found. Please connect your Vercel account first.",
 		});
@@ -382,11 +380,11 @@ const unintegrateSchema = z.object({
 	slug: z.string().optional(),
 });
 
-export const vercelRouter = createTRPCRouter({
+export const vercelRouter = {
 	getProjects: protectedProcedure
-		.input(getProjectsSchema.default({}))
-		.query(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.input(getProjectsSchema.default({ includeIntegrationStatus: true }))
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const projectsData = await vercel.getProjects({
@@ -401,20 +399,19 @@ export const vercelRouter = createTRPCRouter({
 
 			if (input.organizationId) {
 				const { success } = await websitesApi.hasPermission({
-					headers: ctx.headers,
+					headers: context.headers,
 					body: { permissions: { website: ["read"] } },
 				});
 				if (!success) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
+					throw new ORPCError("FORBIDDEN", {
 						message: "Missing organization permissions.",
 					});
 				}
 			}
 
 			// Fetch integration status for all projects
-			const userWebsites = await ctx.db.query.websites.findMany({
-				where: buildWebsiteFilter(ctx.user.id, input.organizationId),
+			const userWebsites = await context.db.query.websites.findMany({
+				where: buildWebsiteFilter(context.user.id, input.organizationId),
 			});
 
 			const websiteMap = new Map(userWebsites.map((w) => [w.id, w]));
@@ -488,8 +485,8 @@ export const vercelRouter = createTRPCRouter({
 
 	getProjectEnvs: protectedProcedure
 		.input(getProjectEnvsSchema)
-		.query(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			return await vercel.getProjectEnvs(input.projectId);
@@ -497,8 +494,8 @@ export const vercelRouter = createTRPCRouter({
 
 	createProjectEnv: protectedProcedure
 		.input(createProjectEnvSchema)
-		.mutation(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const { projectId, upsert, teamId, slug, ...rest } = input;
@@ -524,8 +521,8 @@ export const vercelRouter = createTRPCRouter({
 
 	createProjectEnvBatch: protectedProcedure
 		.input(createProjectEnvBatchSchema)
-		.mutation(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const { projectId, envVars, upsert, teamId, slug } = input;
@@ -551,8 +548,8 @@ export const vercelRouter = createTRPCRouter({
 
 	getProjectDomains: protectedProcedure
 		.input(getProjectDomainsSchema)
-		.query(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const { projectId, ...params } = input;
@@ -561,8 +558,8 @@ export const vercelRouter = createTRPCRouter({
 
 	getProjectEnvByKey: protectedProcedure
 		.input(getProjectEnvByKeySchema)
-		.query(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const { projectId, key, teamId, slug } = input;
@@ -574,8 +571,8 @@ export const vercelRouter = createTRPCRouter({
 
 	setProjectEnv: protectedProcedure
 		.input(setProjectEnvSchema)
-		.mutation(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const { projectId, key, value, upsert, teamId, slug, ...rest } = input;
@@ -594,8 +591,8 @@ export const vercelRouter = createTRPCRouter({
 
 	deleteProjectEnvByKey: protectedProcedure
 		.input(deleteProjectEnvByKeySchema)
-		.mutation(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const { projectId, key, teamId, slug } = input;
@@ -607,8 +604,8 @@ export const vercelRouter = createTRPCRouter({
 
 	editProjectEnv: protectedProcedure
 		.input(editProjectEnvSchema)
-		.mutation(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const { projectId, envVarId, teamId, slug, ...envVar } = input;
@@ -621,8 +618,8 @@ export const vercelRouter = createTRPCRouter({
 
 	removeProjectEnv: protectedProcedure
 		.input(removeProjectEnvSchema)
-		.mutation(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const { projectId, envVarId, customEnvironmentId, teamId, slug } = input;
@@ -636,8 +633,8 @@ export const vercelRouter = createTRPCRouter({
 
 	integrateWebsites: protectedProcedure
 		.input(integrateWebsitesSchema)
-		.mutation(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const {
@@ -650,20 +647,18 @@ export const vercelRouter = createTRPCRouter({
 
 			if (organizationId) {
 				const { success } = await websitesApi.hasPermission({
-					headers: ctx.headers,
+					headers: context.headers,
 					body: { permissions: { website: ["create"] } },
 				});
 				if (!success) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
+					throw new ORPCError("FORBIDDEN", {
 						message: "Missing organization permissions.",
 					});
 				}
 			}
 			for (const cfg of websiteConfigs) {
 				if (cfg.target.length !== 1) {
-					throw new TRPCError({
-						code: "BAD_REQUEST",
+					throw new ORPCError("BAD_REQUEST", {
 						message: "Each domain must specify exactly one target environment",
 					});
 				}
@@ -672,14 +667,14 @@ export const vercelRouter = createTRPCRouter({
 			const results: any[] = [];
 			const errors: any[] = [];
 
-			const websiteService = new WebsiteService(ctx.db);
+			const websiteService = new WebsiteService(context.db);
 			const [existingEnvVars, userWebsites] = await Promise.all([
 				vercel.getProjectEnvsByKey(projectId, ENV_KEY, {
 					...(teamId && { teamId }),
 					...(slug && { slug }),
 				}),
-				ctx.db.query.websites.findMany({
-					where: buildWebsiteFilter(ctx.user.id, organizationId),
+				context.db.query.websites.findMany({
+					where: buildWebsiteFilter(context.user.id, organizationId),
 				}),
 			]);
 
@@ -709,7 +704,7 @@ export const vercelRouter = createTRPCRouter({
 							{
 								name: websiteConfig.websiteName,
 								domain: domainName,
-								userId: ctx.user.id,
+								userId: context.user.id,
 								organizationId,
 							},
 							{
@@ -807,7 +802,7 @@ export const vercelRouter = createTRPCRouter({
 							{
 								integrations: integrationData,
 							},
-							ctx.user.id,
+							context.user.id,
 							organizationId
 						);
 					}
@@ -844,8 +839,8 @@ export const vercelRouter = createTRPCRouter({
 
 	checkIntegrationStatus: protectedProcedure
 		.input(checkIntegrationStatusSchema)
-		.query(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const { projectId, domains, teamId, slug } = input;
@@ -858,8 +853,8 @@ export const vercelRouter = createTRPCRouter({
 							...(slug && { slug }),
 						}),
 						vercel.getProjectDomains(projectId, {}),
-						ctx.db.query.websites.findMany({
-							where: buildWebsiteFilter(ctx.user.id, input.organizationId),
+						context.db.query.websites.findMany({
+							where: buildWebsiteFilter(context.user.id, input.organizationId),
 						}),
 					]);
 
@@ -894,19 +889,18 @@ export const vercelRouter = createTRPCRouter({
 					})),
 				};
 			} catch (error: any) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to check integration status: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to check integration status: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
 
 	triageIssue: protectedProcedure
 		.input(triageIssueSchema)
-		.mutation(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
-			const _websiteService = new WebsiteService(ctx.db);
+			const _websiteService = new WebsiteService(context.db);
 
 			const {
 				projectId,
@@ -920,12 +914,11 @@ export const vercelRouter = createTRPCRouter({
 
 			if (organizationId) {
 				const { success } = await websitesApi.hasPermission({
-					headers: ctx.headers,
+					headers: context.headers,
 					body: { permissions: { website: ["update"] } },
 				});
 				if (!success) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
+					throw new ORPCError("FORBIDDEN", {
 						message: "Missing organization permissions.",
 					});
 				}
@@ -935,8 +928,7 @@ export const vercelRouter = createTRPCRouter({
 				switch (action) {
 					case "remove_orphaned": {
 						if (!envVarId) {
-							throw new TRPCError({
-								code: "BAD_REQUEST",
+							throw new ORPCError("BAD_REQUEST", {
 								message: "envVarId is required for remove_orphaned action",
 							});
 						}
@@ -983,41 +975,38 @@ export const vercelRouter = createTRPCRouter({
 					}
 
 					default:
-						throw new TRPCError({
-							code: "BAD_REQUEST",
+						throw new ORPCError("BAD_REQUEST", {
 							message: `Unknown triage action: ${action}`,
 						});
 				}
 			} catch (error: any) {
-				if (error instanceof TRPCError) {
+				if (error instanceof ORPCError) {
 					throw error;
 				}
 
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to execute triage action: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to execute triage action: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
 
 	getWebsiteIntegrations: protectedProcedure
 		.input(z.object({ organizationId: z.string().optional() }).default({}))
-		.query(async ({ ctx, input }) => {
+		.handler(async ({ context, input }) => {
 			if (input.organizationId) {
 				const { success } = await websitesApi.hasPermission({
-					headers: ctx.headers,
+					headers: context.headers,
 					body: { permissions: { website: ["read"] } },
 				});
 				if (!success) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
+					throw new ORPCError("FORBIDDEN", {
 						message: "Missing organization permissions.",
 					});
 				}
 			}
 
-			const websites = await ctx.db.query.websites.findMany({
-				where: buildWebsiteFilter(ctx.user.id, input.organizationId),
+			const websites = await context.db.query.websites.findMany({
+				where: buildWebsiteFilter(context.user.id, input.organizationId),
 			});
 
 			return websites.map((website) => {
@@ -1032,14 +1021,14 @@ export const vercelRouter = createTRPCRouter({
 					createdAt: website.createdAt,
 					vercelIntegration: vercelIntegration
 						? {
-								projectId: vercelIntegration.projectId,
-								domainName: vercelIntegration.domainName,
-								environments: vercelIntegration.environments || {},
-								environmentCount: Object.keys(
-									vercelIntegration.environments || {}
-								).length,
-								updatedAt: vercelIntegration.updatedAt,
-							}
+							projectId: vercelIntegration.projectId,
+							domainName: vercelIntegration.domainName,
+							environments: vercelIntegration.environments || {},
+							environmentCount: Object.keys(
+								vercelIntegration.environments || {}
+							).length,
+							updatedAt: vercelIntegration.updatedAt,
+						}
 						: null,
 				};
 			});
@@ -1047,8 +1036,8 @@ export const vercelRouter = createTRPCRouter({
 
 	unintegrate: protectedProcedure
 		.input(unintegrateSchema)
-		.mutation(async ({ ctx, input }) => {
-			const token = await getVercelToken(ctx.user.id, ctx.db);
+		.handler(async ({ context, input }) => {
+			const token = await getVercelToken(context.user.id, context.db);
 			const vercel = new VercelSDK(token);
 
 			const {
@@ -1065,12 +1054,11 @@ export const vercelRouter = createTRPCRouter({
 			// Enforce org permission if scoped to org
 			if (organizationId) {
 				const { success } = await websitesApi.hasPermission({
-					headers: ctx.headers,
+					headers: context.headers,
 					body: { permissions: { website: ["update"] } },
 				});
 				if (!success) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
+					throw new ORPCError("FORBIDDEN", {
 						message: "Missing organization permissions.",
 					});
 				}
@@ -1083,9 +1071,9 @@ export const vercelRouter = createTRPCRouter({
 				});
 
 				if (websiteId && !deleteWebsite) {
-					const websiteService = new WebsiteService(ctx.db);
+					const websiteService = new WebsiteService(context.db);
 
-					const website = await ctx.db.query.websites.findFirst({
+					const website = await context.db.query.websites.findFirst({
 						where: eq(websites.id, websiteId),
 					});
 
@@ -1110,19 +1098,19 @@ export const vercelRouter = createTRPCRouter({
 							const updatedIntegrations =
 								Object.keys(updatedEnvironments).length > 0
 									? {
-											...existingIntegrations,
-											vercel: {
-												...vercelIntegrations,
-												environments: updatedEnvironments,
-												updatedAt: new Date().toISOString(),
-											},
-										}
+										...existingIntegrations,
+										vercel: {
+											...vercelIntegrations,
+											environments: updatedEnvironments,
+											updatedAt: new Date().toISOString(),
+										},
+									}
 									: Object.keys(existingIntegrations).length > 1
 										? Object.fromEntries(
-												Object.entries(existingIntegrations).filter(
-													([key]) => key !== "vercel"
-												)
+											Object.entries(existingIntegrations).filter(
+												([key]) => key !== "vercel"
 											)
+										)
 										: null;
 
 							await websiteService.updateWebsite(
@@ -1130,7 +1118,7 @@ export const vercelRouter = createTRPCRouter({
 								{
 									integrations: updatedIntegrations,
 								},
-								ctx.user.id,
+								context.user.id,
 								organizationId
 							);
 						}
@@ -1138,8 +1126,8 @@ export const vercelRouter = createTRPCRouter({
 				}
 
 				if (deleteWebsite && websiteId) {
-					const websiteService = new WebsiteService(ctx.db);
-					await websiteService.deleteWebsite(websiteId, ctx.user.id);
+					const websiteService = new WebsiteService(context.db);
+					await websiteService.deleteWebsite(websiteId, context.user.id);
 				}
 
 				return {
@@ -1150,10 +1138,9 @@ export const vercelRouter = createTRPCRouter({
 					deletedWebsite: deleteWebsite,
 				};
 			} catch (error: any) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: `Failed to unintegrate ${domainName}: ${error.message}`,
+				throw new ORPCError("INTERNAL_SERVER_ERROR", {
+					message: `Failed to unintegrate ${domainName}: ${error instanceof Error ? error.message : "Unknown error"}`,
 				});
 			}
 		}),
-});
+};

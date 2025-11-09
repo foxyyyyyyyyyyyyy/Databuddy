@@ -1,8 +1,9 @@
 import "./polyfills/compression";
 import { auth } from "@databuddy/auth";
-import { appRouter, createTRPCContext } from "@databuddy/rpc";
+import { appRouter, createRPCContext } from "@databuddy/rpc";
 import cors from "@elysiajs/cors";
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { onError } from "@orpc/server";
+import { RPCHandler } from "@orpc/server/fetch";
 import { autumnHandler } from "autumn-js/elysia";
 import { Elysia } from "elysia";
 import { logger } from "./lib/logger";
@@ -12,6 +13,17 @@ import { exportRoute } from "./routes/export";
 import { health } from "./routes/health";
 import { publicApi } from "./routes/public";
 import { query } from "./routes/query";
+
+const rpcHandler = new RPCHandler(appRouter, {
+	interceptors: [
+		onError((error) => {
+			logger.error({
+				message: error instanceof Error ? error.message : String(error),
+				error,
+			});
+		}),
+	],
+});
 
 const app = new Elysia()
 	.use(publicApi)
@@ -45,17 +57,18 @@ const app = new Elysia()
 		})
 	)
 	.use(query)
-	// .use(customSQL)
 	.use(assistant)
 	.use(exportRoute)
-	.all("/trpc/*", ({ request }) =>
-		fetchRequestHandler({
-			endpoint: "/trpc",
-			router: appRouter,
-			req: request,
-			createContext: () => createTRPCContext({ headers: request.headers }),
-		})
-	)
+	.all("/rpc/*", async ({ request }: { request: Request }) => {
+		const context = await createRPCContext({ headers: request.headers });
+		const { response } = await rpcHandler.handle(request, {
+			prefix: "/rpc",
+			context,
+		});
+		return response ?? new Response("Not Found", { status: 404 });
+	}, {
+		parse: "none",
+	})
 	.onError(({ error, code }) => {
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		logger.error({ message: errorMessage, code, error });

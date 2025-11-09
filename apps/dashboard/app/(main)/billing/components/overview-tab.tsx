@@ -30,10 +30,10 @@ import { type FeatureUsage, useBillingData } from "../hooks/use-billing";
 import { CancelSubscriptionDialog } from "./cancel-subscription-dialog";
 import { NoPaymentMethodDialog } from "./no-payment-method-dialog";
 
-interface UsageCardProps {
+type UsageCardProps = {
 	feature: FeatureUsage;
 	onUpgrade: () => void;
-}
+};
 
 const UsageCard = memo(function UsageCardComponent({
 	feature,
@@ -114,7 +114,7 @@ const UsageCard = memo(function UsageCardComponent({
 						</div>
 					</div>
 
-					<div className="flex-shrink-0 text-right">
+					<div className="shrink-0 text-right">
 						{feature.unlimited ? (
 							<Badge>
 								<LightningIcon
@@ -170,7 +170,7 @@ const UsageCard = memo(function UsageCardComponent({
 	);
 });
 
-interface PlanStatusCardProps {
+type PlanStatusCardProps = {
 	plan: Product | undefined;
 	statusDetails: string;
 	onUpgrade: () => void;
@@ -180,7 +180,7 @@ interface PlanStatusCardProps {
 		currentPeriodEnd?: number
 	) => void;
 	onManageBilling: () => void;
-}
+};
 
 const PlanStatusCard = memo(function PlanStatusCardComponent({
 	plan,
@@ -271,7 +271,7 @@ const PlanStatusCard = memo(function PlanStatusCardComponent({
 						</div>
 					</div>
 
-					<div className="flex-shrink-0 text-right">
+					<div className="shrink-0 text-right">
 						<div className="font-bold text-2xl sm:text-3xl">
 							{isFree
 								? "Free"
@@ -288,7 +288,7 @@ const PlanStatusCard = memo(function PlanStatusCardComponent({
 				<div className="space-y-3">
 					{plan?.items.map((item) => (
 						<div className="flex items-start gap-3" key={item.feature_id}>
-							<div className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-muted">
+							<div className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
 								<CheckIcon
 									className="font-bold not-dark:text-primary text-foreground"
 									size={16}
@@ -376,9 +376,9 @@ const PlanStatusCard = memo(function PlanStatusCardComponent({
 	);
 });
 
-interface OverviewTabProps {
+type OverviewTabProps = {
 	onNavigateToPlans: () => void;
-}
+};
 
 export const OverviewTab = memo(function OverviewTabComponent({
 	onNavigateToPlans,

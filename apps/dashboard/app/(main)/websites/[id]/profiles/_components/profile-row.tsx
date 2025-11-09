@@ -136,7 +136,7 @@ export function ProfileRow({
 				<div className="flex cursor-pointer items-center justify-between border-transparent border-l-4 p-5 transition-all duration-200 hover:border-primary/20 hover:bg-muted/30">
 					<div className="flex min-w-0 flex-1 items-center gap-4">
 						{/* Expand/Collapse and Profile Number */}
-						<div className="flex flex-shrink-0 items-center gap-3">
+						<div className="flex shrink-0 items-center gap-3">
 							{isExpanded ? (
 								<CaretDownIcon className="h-4 w-4 text-muted-foreground transition-transform" />
 							) : (
@@ -146,7 +146,7 @@ export function ProfileRow({
 								{index + 1}
 							</div>
 						</div>
-						<div className="flex flex-shrink-0 items-center gap-2">
+						<div className="flex shrink-0 items-center gap-2">
 							<CountryFlag country={profile.country} size="md" />
 							{getDeviceIcon(profile.device)}
 							<BrowserIcon name={profile.browser} size="md" />
@@ -167,16 +167,16 @@ export function ProfileRow({
 
 						{/* Latest Referrer Info */}
 						{profileReferrerInfo && (
-							<div className="hidden min-w-[120px] flex-shrink-0 items-center gap-2 lg:flex">
+							<div className="hidden min-w-[120px] shrink-0 items-center gap-2 lg:flex">
 								<div className="flex items-center gap-2">
 									{profileReferrerInfo.domain ? (
 										<FaviconImage
-											className="flex-shrink-0"
+											className="shrink-0"
 											domain={profileReferrerInfo.domain}
 											size={16}
 										/>
 									) : (
-										<ArrowSquareOutIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+										<ArrowSquareOutIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
 									)}
 									<span className="truncate text-muted-foreground text-sm">
 										{profileReferrerInfo.name}
@@ -187,7 +187,7 @@ export function ProfileRow({
 					</div>
 
 					{/* Key Metrics - More Prominent */}
-					<div className="ml-4 flex flex-shrink-0 items-center gap-4 text-sm">
+					<div className="ml-4 flex shrink-0 items-center gap-4 text-sm">
 						{/* Sessions Count */}
 						<div className="hidden min-w-[60px] flex-col items-center gap-1 sm:flex">
 							<div className="flex items-center gap-1 text-muted-foreground text-xs">

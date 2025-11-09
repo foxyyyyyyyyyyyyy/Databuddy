@@ -53,7 +53,7 @@ function filterOrganizations<T extends { name: string; slug?: string | null }>(
 	return filtered;
 }
 
-interface OrganizationSelectorTriggerProps {
+type OrganizationSelectorTriggerProps = {
 	activeOrganization: {
 		name: string;
 		slug?: string | null;
@@ -61,7 +61,7 @@ interface OrganizationSelectorTriggerProps {
 	} | null;
 	isOpen: boolean;
 	isSettingActiveOrganization: boolean;
-}
+};
 
 function OrganizationSelectorTrigger({
 	activeOrganization,
@@ -137,8 +137,12 @@ export function OrganizationSelector() {
 	const isLoading = isLoadingOrgs || isLoadingActive;
 
 	const handleSelectOrganization = async (organizationId: string | null) => {
-		if (organizationId === activeOrganization?.id) return;
-		if (organizationId === null && !activeOrganization) return;
+		if (organizationId === activeOrganization?.id) {
+			return;
+		}
+		if (organizationId === null && !activeOrganization) {
+			return;
+		}
 
 		setIsSwitching(true);
 		setIsOpen(false);

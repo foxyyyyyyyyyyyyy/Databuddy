@@ -36,10 +36,10 @@ const HelpDialog = dynamic(
 	}
 );
 
-interface CategorySidebarProps {
+type CategorySidebarProps = {
 	onCategoryChange?: (categoryId: string) => void;
 	selectedCategory?: string;
-}
+};
 
 export function CategorySidebar({
 	onCategoryChange,
@@ -85,7 +85,7 @@ export function CategorySidebar({
 			<div className="flex h-full flex-col">
 				<div className="flex h-12 items-center justify-center border-sidebar-border border-b">
 					<Link
-						className="relative flex-shrink-0 transition-opacity hover:opacity-80"
+						className="relative shrink-0 transition-opacity hover:opacity-80"
 						href="/websites"
 					>
 						<Image

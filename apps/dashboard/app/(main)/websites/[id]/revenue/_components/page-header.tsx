@@ -30,7 +30,7 @@ export function PageHeader({
 	return (
 		<div className="space-y-6">
 			{/* Header - matching funnels design */}
-			<div className="border-b bg-gradient-to-r from-background via-background to-muted/20 pb-6">
+			<div className="border-b bg-linear-to-r from-background via-background to-muted/20 pb-6">
 				<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 					<div className="space-y-2">
 						<div className="flex items-center gap-3">

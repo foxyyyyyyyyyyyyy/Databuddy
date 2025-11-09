@@ -215,7 +215,7 @@ export function TrackingOptionCard({
 				<div className="mb-3 rounded border border-destructive/20 bg-destructive/10 p-3">
 					<div className="flex items-start gap-2">
 						<WarningCircleIcon
-							className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive"
+							className="mt-0.5 h-4 w-4 shrink-0 text-destructive"
 							weight="duotone"
 						/>
 						<div>

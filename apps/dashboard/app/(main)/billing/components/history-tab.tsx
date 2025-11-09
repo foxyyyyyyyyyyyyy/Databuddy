@@ -73,7 +73,7 @@ const InvoiceCard = memo(function InvoiceCardComponent({
 			<CardContent className="p-4">
 				<div className="flex items-center justify-between">
 					<div className="flex min-w-0 flex-1 items-center gap-3">
-						<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded border bg-muted">
+						<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded border bg-muted">
 							<FileTextIcon
 								className="not-dark:text-primary text-muted-foreground"
 								size={16}
@@ -94,7 +94,7 @@ const InvoiceCard = memo(function InvoiceCardComponent({
 						</div>
 					</div>
 
-					<div className="flex flex-shrink-0 items-center gap-3">
+					<div className="flex shrink-0 items-center gap-3">
 						<div className="text-right">
 							<div className="font-semibold">
 								{formatAmount(invoice.total, invoice.currency)}
@@ -146,7 +146,7 @@ const SubscriptionHistoryCard = memo(function SubscriptionHistoryCardComponent({
 							className="flex items-start gap-2 rounded border p-2 text-sm"
 							key={product.id}
 						>
-							<div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-muted">
+							<div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
 								<CheckIcon
 									className="not-dark:text-primary text-primary"
 									size={10}

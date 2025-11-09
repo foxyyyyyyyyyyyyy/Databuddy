@@ -22,7 +22,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDbConnection } from "@/hooks/use-db-connections";
-import { trpc } from "@/lib/trpc";
 
 interface OnlineAdvisorPageProps {
 	params: Promise<{ id: string }>;
@@ -31,7 +30,7 @@ interface OnlineAdvisorPageProps {
 function LoadingState() {
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded border border-primary/20 bg-primary/10 p-3">
 						<SparkleIcon className="h-6 w-6 text-primary" weight="duotone" />
@@ -119,7 +118,7 @@ function RecommendationCard({
 						Click apply to execute this recommendation
 					</div>
 					<Button
-						className="gap-2 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+						className="gap-2 bg-linear-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
 						disabled={isApplying}
 						onClick={onApply}
 						size="sm"
@@ -152,31 +151,31 @@ export default function OnlineAdvisorPage({ params }: OnlineAdvisorPageProps) {
 	const resolvedParams = use(params);
 	const connectionId = resolvedParams.id;
 
-	const utils = trpc.useUtils();
+	const utils = orpc.useUtils();
 
 	const { data: connection } = useDbConnection(connectionId);
 
 	const { data: advisorStatus, isLoading: statusLoading } =
-		trpc.performance.checkOnlineAdvisorStatus.useQuery({ id: connectionId });
+		orpc.performance.checkOnlineAdvisorStatus.useQuery({ id: connectionId });
 
 	const { data: indexRecommendations, isLoading: indexLoading } =
-		trpc.performance.getIndexRecommendations.useQuery(
+		orpc.performance.getIndexRecommendations.useQuery(
 			{ id: connectionId },
 			{ enabled: advisorStatus?.enabled }
 		);
 
 	const { data: statisticsRecommendations, isLoading: statsLoading } =
-		trpc.performance.getStatisticsRecommendations.useQuery(
+		orpc.performance.getStatisticsRecommendations.useQuery(
 			{ id: connectionId },
 			{ enabled: advisorStatus?.enabled }
 		);
 
-	const { data: executorStats } = trpc.performance.getExecutorStats.useQuery(
+	const { data: executorStats } = orpc.performance.getExecutorStats.useQuery(
 		{ id: connectionId },
 		{ enabled: advisorStatus?.enabled }
 	);
 
-	const activateMutation = trpc.performance.activateOnlineAdvisor.useMutation({
+	const activateMutation = orpc.performance.activateOnlineAdvisor.useMutation({
 		onSuccess: () => {
 			utils.performance.checkOnlineAdvisorStatus.invalidate({
 				id: connectionId,
@@ -197,7 +196,7 @@ export default function OnlineAdvisorPage({ params }: OnlineAdvisorPageProps) {
 		},
 	});
 
-	const installMutation = trpc.dbConnections.installExtension.useMutation({
+	const installMutation = orpc.dbConnections.installExtension.useMutation({
 		onSuccess: () => {
 			utils.performance.checkOnlineAdvisorStatus.invalidate({
 				id: connectionId,
@@ -213,7 +212,7 @@ export default function OnlineAdvisorPage({ params }: OnlineAdvisorPageProps) {
 	});
 
 	const applyIndexMutation =
-		trpc.performance.applyIndexRecommendation.useMutation({
+		orpc.performance.applyIndexRecommendation.useMutation({
 			onSuccess: (result, variables) => {
 				if (result.success) {
 					utils.performance.getIndexRecommendations.invalidate({
@@ -248,7 +247,7 @@ export default function OnlineAdvisorPage({ params }: OnlineAdvisorPageProps) {
 		});
 
 	const applyStatsMutation =
-		trpc.performance.applyStatisticsRecommendation.useMutation({
+		orpc.performance.applyStatisticsRecommendation.useMutation({
 			onSuccess: (result, variables) => {
 				if (result.success) {
 					utils.performance.getStatisticsRecommendations.invalidate({
@@ -300,7 +299,7 @@ export default function OnlineAdvisorPage({ params }: OnlineAdvisorPageProps) {
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded-xl border border-primary/20 bg-primary/10 p-3">
 						<SparkleIcon className="h-6 w-6 text-primary" weight="duotone" />

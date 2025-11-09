@@ -169,7 +169,7 @@ export function LogoCarousel({ columns = 3, logos }: LogoCarouselProps) {
 			onMouseLeave={() => setIsPaused(false)}
 		>
 			{/* gradient edges */}
-			<div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent sm:w-12" />
+			<div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-linear-to-r from-background to-transparent sm:w-12" />
 			<div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent sm:w-12" />
 			{logoColumns.map((columnLogos, index) => (
 				<LogoColumn

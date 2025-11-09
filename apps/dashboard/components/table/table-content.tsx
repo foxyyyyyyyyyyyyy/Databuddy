@@ -325,7 +325,7 @@ export function TableContent<TData extends { name: string | number }>({
 																? "Collapse row"
 																: "Expand row"
 														}
-														className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-sidebar-accent/60"
+														className="shrink-0 rounded p-0.5 transition-colors hover:bg-sidebar-accent/60"
 														onClick={(e) => {
 															e.stopPropagation();
 															toggleRowExpansion(row.id);

@@ -35,7 +35,6 @@ import {
 	useDeleteDbConnection,
 	useUpdateDbConnection,
 } from "@/hooks/use-db-connections";
-import { trpc } from "@/lib/trpc";
 import { EditConnectionDialog } from "../../_components/edit-connection-dialog";
 
 interface ConnectionSettingsPageProps {
@@ -45,7 +44,7 @@ interface ConnectionSettingsPageProps {
 function LoadingState() {
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded border border-primary/20 bg-primary/10 p-3">
 						<GearIcon className="h-6 w-6 text-primary" weight="duotone" />
@@ -174,7 +173,7 @@ export default function ConnectionSettingsPage({
 	const resolvedParams = use(params);
 	const connectionId = resolvedParams.id;
 
-	const utils = trpc.useUtils();
+	const utils = orpc.useUtils();
 
 	const { data: connection, isLoading } = useDbConnection(connectionId);
 
@@ -212,7 +211,7 @@ export default function ConnectionSettingsPage({
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded-xl border border-primary/20 bg-primary/10 p-3">
 						<GearIcon className="h-6 w-6 text-primary" weight="duotone" />

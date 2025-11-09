@@ -2,23 +2,24 @@
 
 import type { QueryPerformanceSummary } from "@databuddy/shared/types/performance";
 import { DatabaseIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
 import { use, useCallback, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import { QueryDetailSheet } from "../performance/_components/query-detail-sheet";
 import { QueryRow } from "./_components/query-row";
 
-interface QueriesPageProps {
+type QueriesPageProps = {
 	params: Promise<{ id: string }>;
-}
+};
 
 // Loading State
 const LoadingState = () => (
 	<div className="flex h-full flex-col">
-		<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+		<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 			<div className="flex items-center gap-4">
 				<div className="rounded border border-primary/20 bg-primary/10 p-3">
 					<DatabaseIcon className="h-6 w-6 text-primary" weight="duotone" />
@@ -56,12 +57,12 @@ export default function QueriesPage({ params }: QueriesPageProps) {
 		defaultValue: "most-called" as TabId,
 	});
 
-	// Fetch data
-	const { data: metrics, isLoading: metricsLoading } =
-		trpc.performance.getMetrics.useQuery(
-			{ id: connectionId },
-			{ refetchInterval: 30_000 }
-		);
+	const { data: metrics, isLoading: metricsLoading } = useQuery({
+		...orpc.performance.getMetrics.queryOptions({
+			input: { id: connectionId },
+		}),
+		refetchInterval: 30_000,
+	});
 
 	const handleQueryClick = useCallback((query: QueryPerformanceSummary) => {
 		const queryWithName = { ...query, name: query.query };
@@ -121,7 +122,7 @@ export default function QueriesPage({ params }: QueriesPageProps) {
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded-xl border border-primary/20 bg-primary/10 p-3">
 						<DatabaseIcon className="h-6 w-6 text-primary" weight="duotone" />

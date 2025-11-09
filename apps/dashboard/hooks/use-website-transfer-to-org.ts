@@ -1,17 +1,26 @@
 "use client";
 
-import { trpc } from "@/lib/trpc";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { orpc } from "@/lib/orpc";
 
 export function useWebsiteTransferToOrg() {
-	const utils = trpc.useUtils();
+	const queryClient = useQueryClient();
 
-	const transferMutation = trpc.websites.transferToOrganization.useMutation({
-		onSuccess: (_, variables) => {
-			utils.websites.list.invalidate();
-			utils.websites.listWithCharts.invalidate();
-			utils.websites.getById.invalidate({ id: variables.websiteId });
-
-			utils.websites.getById.refetch({ id: variables.websiteId });
+	const transferMutation = useMutation({
+		...orpc.websites.transferToOrganization.mutationOptions(),
+		onSuccess: (_data, variables) => {
+			queryClient.invalidateQueries({
+				queryKey: orpc.websites.list.queryOptions({ input: {} }).queryKey,
+			});
+			queryClient.invalidateQueries({
+				queryKey: orpc.websites.listWithCharts.queryOptions({ input: {} })
+					.queryKey,
+			});
+			const getByIdKey = orpc.websites.getById.queryOptions({
+				input: { id: variables.websiteId },
+			}).queryKey;
+			queryClient.invalidateQueries({ queryKey: getByIdKey });
+			queryClient.refetchQueries({ queryKey: getByIdKey });
 		},
 	});
 
@@ -19,7 +28,7 @@ export function useWebsiteTransferToOrg() {
 		isTransferring: transferMutation.isPending,
 		transferWebsiteToOrg: (
 			args: { websiteId: string; targetOrganizationId: string },
-			opts?: { onSuccess?: () => void; onError?: (error: any) => void }
+			opts?: { onSuccess?: () => void; onError?: (error: unknown) => void }
 		) => {
 			transferMutation.mutate(args, {
 				onSuccess: () => {

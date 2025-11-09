@@ -1,23 +1,23 @@
 import type { DateRange } from "@databuddy/shared/types/analytics";
-import { useQueries, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 
-export interface FunnelStep {
+export type FunnelStep = {
 	type: "PAGE_VIEW" | "EVENT" | "CUSTOM";
 	target: string;
 	name: string;
 	conditions?: Record<string, unknown>;
 }
 
-export interface FunnelFilter {
+export type FunnelFilter = {
 	field: string;
 	operator: "equals" | "contains" | "not_equals" | "in" | "not_in";
 	value: string | string[];
 	label?: string;
 }
 
-export interface Funnel {
+export type Funnel = {
 	id: string;
 	name: string;
 	description?: string | null;
@@ -28,7 +28,7 @@ export interface Funnel {
 	updatedAt: string;
 }
 
-export interface FunnelAnalytics {
+export type FunnelAnalytics = {
 	step_number: number;
 	step_name: string;
 	users: number;
@@ -40,7 +40,7 @@ export interface FunnelAnalytics {
 	avg_time_to_complete?: number;
 }
 
-export interface FunnelPerformanceMetrics {
+export type FunnelPerformanceMetrics = {
 	overall_conversion_rate: number;
 	total_users_entered: number;
 	total_users_completed: number;
@@ -51,14 +51,14 @@ export interface FunnelPerformanceMetrics {
 	steps_analytics: FunnelAnalytics[];
 }
 
-export interface CreateFunnelData {
+export type CreateFunnelData = {
 	name: string;
 	description?: string;
 	steps: FunnelStep[];
 	filters?: FunnelFilter[];
 }
 
-export interface AutocompleteData {
+export type AutocompleteData = {
 	customEvents: string[];
 	pagePaths: string[];
 	browsers: string[];
@@ -69,7 +69,7 @@ export interface AutocompleteData {
 	utmMediums: string[];
 	utmCampaigns: string[];
 }
-export interface FunnelAnalyticsByReferrerResult {
+export type FunnelAnalyticsByReferrerResult = {
 	referrer: string;
 	referrer_parsed: {
 		name: string;
@@ -84,42 +84,46 @@ export interface FunnelAnalyticsByReferrerResult {
 export function useFunnels(websiteId: string, enabled = true) {
 	const queryClient = useQueryClient();
 
-	const query = trpc.funnels.list.useQuery(
-		{ websiteId },
-		{ enabled: enabled && !!websiteId }
-	);
+	const query = useQuery({
+		...orpc.funnels.list.queryOptions({ input: { websiteId } }),
+		enabled: enabled && !!websiteId,
+	});
 
 	const funnelsData = useMemo(
 		() =>
-			(query.data || []).map((f) => ({
+			(query.data ?? []).map((f) => ({
 				...f,
 				steps: f.steps as FunnelStep[],
-				filters: (f.filters as FunnelFilter[]) || [],
+				filters: (f.filters as FunnelFilter[]) ?? [],
 			})),
 		[query.data]
 	);
 
-	const createMutation = trpc.funnels.create.useMutation({
+	const listKey = orpc.funnels.list.queryOptions({ input: { websiteId } }).queryKey;
+	const analyticsKey = orpc.funnels.getAnalytics.queryOptions({
+		input: { websiteId, funnelId: "", startDate: "", endDate: "" },
+	}).queryKey;
+
+	const createMutation = useMutation({
+		...orpc.funnels.create.mutationOptions(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: [["funnels", "list"]] });
+			queryClient.invalidateQueries({ queryKey: listKey });
 		},
 	});
 
-	const updateMutation = trpc.funnels.update.useMutation({
+	const updateMutation = useMutation({
+		...orpc.funnels.update.mutationOptions(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: [["funnels", "list"]] });
-			queryClient.invalidateQueries({
-				queryKey: [["funnels", "getAnalytics"]],
-			});
+			queryClient.invalidateQueries({ queryKey: listKey });
+			queryClient.invalidateQueries({ queryKey: analyticsKey });
 		},
 	});
 
-	const deleteMutation = trpc.funnels.delete.useMutation({
+	const deleteMutation = useMutation({
+		...orpc.funnels.delete.mutationOptions(),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: [["funnels", "list"]] });
-			queryClient.invalidateQueries({
-				queryKey: [["funnels", "getAnalytics"]],
-			});
+			queryClient.invalidateQueries({ queryKey: listKey });
+			queryClient.invalidateQueries({ queryKey: analyticsKey });
 		},
 	});
 
@@ -159,10 +163,10 @@ export function useFunnels(websiteId: string, enabled = true) {
 }
 
 export function useFunnel(websiteId: string, funnelId: string, enabled = true) {
-	return trpc.funnels.getById.useQuery(
-		{ id: funnelId, websiteId },
-		{ enabled: enabled && !!websiteId && !!funnelId }
-	);
+	return useQuery({
+		...orpc.funnels.getById.queryOptions({ input: { id: funnelId, websiteId } }),
+		enabled: enabled && !!websiteId && !!funnelId,
+	});
 }
 
 export function useFunnelAnalytics(
@@ -171,15 +175,17 @@ export function useFunnelAnalytics(
 	dateRange: DateRange,
 	options: { enabled: boolean } = { enabled: true }
 ) {
-	return trpc.funnels.getAnalytics.useQuery(
-		{
-			funnelId,
-			websiteId,
-			startDate: dateRange?.start_date,
-			endDate: dateRange?.end_date,
-		},
-		{ enabled: options.enabled && !!websiteId && !!funnelId }
-	);
+	return useQuery({
+		...orpc.funnels.getAnalytics.queryOptions({
+			input: {
+				funnelId,
+				websiteId,
+				startDate: dateRange?.start_date,
+				endDate: dateRange?.end_date,
+			},
+		}),
+		enabled: options.enabled && !!websiteId && !!funnelId,
+	});
 }
 
 export function useFunnelAnalyticsByReferrer(
@@ -188,15 +194,17 @@ export function useFunnelAnalyticsByReferrer(
 	dateRange?: DateRange,
 	options: { enabled: boolean } = { enabled: true }
 ) {
-	return trpc.funnels.getAnalyticsByReferrer.useQuery(
-		{
-			funnelId,
-			websiteId,
-			startDate: dateRange?.start_date,
-			endDate: dateRange?.end_date,
-		},
-		{ enabled: options.enabled && !!websiteId && !!funnelId }
-	);
+	return useQuery({
+		...orpc.funnels.getAnalyticsByReferrer.queryOptions({
+			input: {
+				funnelId,
+				websiteId,
+				startDate: dateRange?.start_date,
+				endDate: dateRange?.end_date,
+			},
+		}),
+		enabled: options.enabled && !!websiteId && !!funnelId,
+	});
 }
 
 export function useEnhancedFunnelAnalytics(
@@ -260,15 +268,14 @@ export function useFunnelComparison(
 ) {
 	const funnels = useQueries({
 		queries: funnelIds.map((funnelId) => ({
-			queryKey: ["funnels", "getAnalytics", { websiteId, funnelId, dateRange }],
-			queryFn: () =>
-				// biome-ignore lint/correctness/useHookAtTopLevel: "trpc works this way"
-				trpc.funnels.getAnalytics.useQuery({
+			...orpc.funnels.getAnalytics.queryOptions({
+				input: {
 					websiteId,
 					funnelId,
 					startDate: dateRange?.start_date,
 					endDate: dateRange?.end_date,
-				}),
+				},
+			}),
 			enabled: enabled && !!websiteId && !!funnelId,
 		})),
 	});
@@ -305,19 +312,14 @@ export function useFunnelPerformance(
 
 	const results = useQueries({
 		queries: (funnels || []).map((funnel) => ({
-			queryKey: [
-				"funnels",
-				"getAnalytics",
-				{ websiteId, funnelId: funnel.id, dateRange },
-			],
-			queryFn: () =>
-				// biome-ignore lint/correctness/useHookAtTopLevel: "trpc works this way"
-				trpc.funnels.getAnalytics.useQuery({
+			...orpc.funnels.getAnalytics.queryOptions({
+				input: {
 					websiteId,
 					funnelId: funnel.id,
 					startDate: dateRange?.start_date,
 					endDate: dateRange?.end_date,
-				}),
+				},
+			}),
 			enabled: enabled && !!websiteId && !!funnel.id,
 		})),
 	});
@@ -346,13 +348,11 @@ export function useFunnelPerformance(
 }
 
 export function useAutocompleteData(websiteId: string, enabled = true) {
-	return trpc.autocomplete.get.useQuery(
-		{
-			websiteId,
-		},
-		{
-			enabled: enabled && !!websiteId,
-			staleTime: 1000 * 60 * 5, // 5 minutes
-		}
-	);
+	return useQuery({
+		...orpc.autocomplete.get.queryOptions({
+			input: { websiteId },
+		}),
+		enabled: enabled && !!websiteId,
+		staleTime: 1000 * 60 * 5,
+	});
 }

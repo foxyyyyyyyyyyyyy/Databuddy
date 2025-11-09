@@ -30,7 +30,7 @@ function OrganizationSkeleton() {
 			<CardContent className="p-4">
 				<div className="space-y-3">
 					<div className="flex items-start gap-3">
-						<Skeleton className="h-10 w-10 flex-shrink-0 rounded-full" />
+						<Skeleton className="h-10 w-10 shrink-0 rounded-full" />
 						<div className="min-w-0 flex-1 space-y-1.5">
 							<Skeleton className="h-3 w-32" />
 							<Skeleton className="h-3 w-24" />
@@ -151,7 +151,7 @@ export function OrganizationsList({
 								<div className="space-y-3">
 									{/* Organization Info */}
 									<div className="flex items-start gap-3">
-										<Avatar className="h-10 w-10 flex-shrink-0 border border-border/30">
+										<Avatar className="h-10 w-10 shrink-0 border border-border/30">
 											<AvatarImage alt={org.name} src={org.logo || undefined} />
 											<AvatarFallback className="bg-accent font-medium text-xs">
 												{getOrganizationInitials(org.name)}

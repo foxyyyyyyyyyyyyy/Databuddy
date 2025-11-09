@@ -1,6 +1,7 @@
 import { KeyIcon, PlusIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { trpc } from "@/lib/trpc";
+import { orpc } from "@/lib/orpc";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
@@ -64,17 +65,12 @@ export function ApiKeyList({
 	onCreateNew,
 	onSelect,
 }: ApiKeyListProps) {
-	const { data, isLoading, isError } = trpc.apikeys.list.useQuery(
-		{
-			organizationId,
-		},
-		{
-			// ensure a refetch when the component mounts/changes organization
-			refetchOnMount: true,
-			refetchOnReconnect: true,
-			staleTime: 0,
-		}
-	);
+	const { data, isLoading, isError } = useQuery({
+		...orpc.apikeys.list.queryOptions({ input: { organizationId } }),
+		refetchOnMount: true,
+		refetchOnReconnect: true,
+		staleTime: 0,
+	});
 
 	if (isLoading) {
 		return <ApiKeyListSkeleton />;

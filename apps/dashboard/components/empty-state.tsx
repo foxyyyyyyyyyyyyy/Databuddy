@@ -181,7 +181,7 @@ export const EmptyState = memo(function EmptyState({
 									<Button
 										className={cn(
 											variant === "default" &&
-												"group relative min-h-[44px] cursor-pointer touch-manipulation select-none gap-2 overflow-hidden rounded-lg bg-gradient-to-r from-primary to-primary/90 px-8 py-4 font-medium text-base transition-all duration-300 hover:from-primary/90 hover:to-primary hover:shadow-lg focus-visible:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none sm:min-h-[40px]",
+												"group relative min-h-[44px] cursor-pointer touch-manipulation select-none gap-2 overflow-hidden rounded-lg bg-linear-to-r from-primary to-primary/90 px-8 py-4 font-medium text-base transition-all duration-300 hover:from-primary/90 hover:to-primary hover:shadow-lg focus-visible:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none sm:min-h-[40px]",
 											variant === "simple" &&
 												"min-h-[44px] cursor-pointer touch-manipulation select-none gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 motion-reduce:transition-none sm:min-h-[40px]",
 											variant === "minimal" &&
@@ -193,7 +193,7 @@ export const EmptyState = memo(function EmptyState({
 										variant={action.variant || "default"}
 									>
 										{variant === "default" && (
-											<div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%] motion-reduce:transform-none" />
+											<div className="absolute inset-0 translate-x-[-100%] bg-linear-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-[100%] motion-reduce:transform-none" />
 										)}
 										{variant === "default" && (
 											<PlusIcon

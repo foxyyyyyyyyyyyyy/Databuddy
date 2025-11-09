@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRealTimeStats } from "@/hooks/use-dynamic-query";
 
-interface LiveUserIndicatorProps {
+type LiveUserIndicatorProps = {
 	websiteId: string;
-}
+};
 
 export function LiveUserIndicator({ websiteId }: LiveUserIndicatorProps) {
 	const { activeUsers: count } = useRealTimeStats(websiteId);

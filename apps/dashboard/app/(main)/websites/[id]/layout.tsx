@@ -7,6 +7,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import NotFound from "@/app/not-found";
 import { useTrackingSetup } from "@/hooks/use-tracking-setup";
+import { useWebsite } from "@/hooks/use-websites";
 import { isAnalyticsRefreshingAtom } from "@/stores/jotai/filterAtoms";
 import { AnalyticsToolbar } from "./_components/analytics-toolbar";
 import { FiltersSection } from "./_components/filters-section";
@@ -19,7 +20,8 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 	const { id } = useParams();
 	const pathname = usePathname();
 	const queryClient = useQueryClient();
-	const { isTrackingSetup } = useTrackingSetup(id as string);
+	const { isTrackingSetup, isTrackingSetupLoading } = useTrackingSetup(id as string);
+	const { isLoading: isWebsiteLoading } = useWebsite(id as string);
 	const [isRefreshing, setIsRefreshing] = useAtom(isAnalyticsRefreshingAtom);
 	const toolbarRef = useRef<HTMLDivElement>(null);
 	const [toolbarHeight, setToolbarHeight] = useState(88);
@@ -34,7 +36,7 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 
 	useLayoutEffect(() => {
 		const element = toolbarRef.current;
-		if (!element || isAssistantPage || !isTrackingSetup) {
+		if (!element || isAssistantPage) {
 			setToolbarHeight(0);
 			return;
 		}
@@ -52,13 +54,15 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 		return () => {
 			resizeObserver.disconnect();
 		};
-	}, [isTrackingSetup, isAssistantPage]);
+	}, [isAssistantPage]);
 
 	if (!id) {
 		return <NotFound />;
 	}
 
 	const websiteId = id as string;
+	const isToolbarLoading = isWebsiteLoading || isTrackingSetupLoading || isTrackingSetup === null;
+	const isToolbarDisabled = !isTrackingSetup || isToolbarLoading;
 
 	const handleRefresh = async () => {
 		setIsRefreshing(true);
@@ -83,24 +87,26 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
 
 	return (
 		<div className="flex h-full flex-col overflow-hidden">
-			{isTrackingSetup && !isAssistantPage && (
+			{!isAssistantPage && (
 				<div
 					className="fixed top-12 right-0 left-0 z-50 shrink-0 space-y-0 bg-background md:top-0 md:left-84"
 					ref={toolbarRef}
 				>
 					<AnalyticsToolbar
+						isDisabled={isToolbarDisabled}
+						isLoading={isToolbarLoading}
 						isRefreshing={isRefreshing}
 						onRefresh={handleRefresh}
 						websiteId={websiteId}
 					/>
-					<FiltersSection />
+					{isTrackingSetup && <FiltersSection />}
 				</div>
 			)}
 
 			<div
-				className={`${isAssistantPage ? "min-h-0 flex-1" : isTrackingSetup && !isAssistantPage ? "min-h-0 flex-1 overflow-y-auto" : "min-h-0 flex-1 overflow-y-auto"}`}
+				className={`${isAssistantPage ? "min-h-0 flex-1" : "min-h-0 flex-1 overflow-y-auto"}`}
 				style={
-					isTrackingSetup && !isAssistantPage
+					!isAssistantPage
 						? { paddingTop: `${toolbarHeight}px` }
 						: undefined
 				}

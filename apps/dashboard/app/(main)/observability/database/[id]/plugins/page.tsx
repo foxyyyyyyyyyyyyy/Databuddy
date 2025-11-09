@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDbConnection } from "@/hooks/use-db-connections";
-import { trpc } from "@/lib/trpc";
 import { ExtensionSearch, ExtensionStats, ExtensionTabs } from "./_components";
 
 interface ExtensionsPageProps {
@@ -41,7 +40,7 @@ interface ExtensionsPageProps {
 function LoadingState() {
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded border border-primary/20 bg-primary/10 p-3">
 						<DatabaseIcon className="h-6 w-6 text-primary" weight="duotone" />
@@ -455,19 +454,19 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 	const resolvedParams = use(params);
 	const connectionId = resolvedParams.id;
 
-	const utils = trpc.useUtils();
+	const utils = orpc.useUtils();
 
 	const { data: connection } = useDbConnection(connectionId);
-	const { data: extensions } = trpc.dbConnections.getExtensions.useQuery({
+	const { data: extensions } = orpc.dbConnections.getExtensions.useQuery({
 		id: connectionId,
 	});
 	const { data: availableExtensions } =
-		trpc.dbConnections.getAvailableExtensions.useQuery({
+		orpc.dbConnections.getAvailableExtensions.useQuery({
 			id: connectionId,
 		});
 
 	// Mutations
-	const installMutation = trpc.dbConnections.installExtension.useMutation({
+	const installMutation = orpc.dbConnections.installExtension.useMutation({
 		onSuccess: (result, variables) => {
 			if (result?.success !== false) {
 				// Successful installation
@@ -509,7 +508,7 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 		},
 	});
 
-	const updateMutation = trpc.dbConnections.updateExtension.useMutation({
+	const updateMutation = orpc.dbConnections.updateExtension.useMutation({
 		onSuccess: () => {
 			utils.dbConnections.getExtensions.invalidate({ id: connectionId });
 			setError(null);
@@ -520,7 +519,7 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 		},
 	});
 
-	const removeMutation = trpc.dbConnections.dropExtension.useMutation({
+	const removeMutation = orpc.dbConnections.dropExtension.useMutation({
 		onSuccess: (result, variables) => {
 			if (result.success) {
 				utils.dbConnections.getExtensions.invalidate({ id: connectionId });
@@ -550,7 +549,7 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 		},
 	});
 
-	const resetMutation = trpc.dbConnections.resetExtensionStats.useMutation({
+	const resetMutation = orpc.dbConnections.resetExtensionStats.useMutation({
 		onSuccess: () => {
 			utils.dbConnections.getExtensions.invalidate({ id: connectionId });
 			setError(null);
@@ -600,7 +599,7 @@ export default function ExtensionsPage({ params }: ExtensionsPageProps) {
 
 	return (
 		<div className="flex h-full flex-col">
-			<div className="border-b bg-gradient-to-r from-background to-muted/20 px-6 py-6">
+			<div className="border-b bg-linear-to-r from-background to-muted/20 px-6 py-6">
 				<div className="flex items-center gap-4">
 					<div className="rounded-xl border border-primary/20 bg-primary/10 p-3">
 						<DatabaseIcon className="h-6 w-6 text-primary" weight="duotone" />

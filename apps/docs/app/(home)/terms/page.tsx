@@ -207,7 +207,7 @@ export default function TermsPage() {
 						<div className="my-4 rounded border border-amber-500/20 bg-amber-500/10 p-4">
 							<p className="flex items-start text-sm">
 								<WarningIcon
-									className="mt-0.5 mr-2 h-4 w-4 flex-shrink-0 text-amber-400"
+									className="mt-0.5 mr-2 h-4 w-4 shrink-0 text-amber-400"
 									weight="duotone"
 								/>
 								<span>
