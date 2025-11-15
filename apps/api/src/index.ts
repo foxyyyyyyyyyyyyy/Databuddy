@@ -3,6 +3,9 @@ import { auth } from "@databuddy/auth";
 import { appRouter, createRPCContext } from "@databuddy/rpc";
 import { logger } from "@databuddy/shared/logger";
 import cors from "@elysiajs/cors";
+import { opentelemetry } from "@elysiajs/opentelemetry";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { autumnHandler } from "autumn-js/elysia";
@@ -17,14 +20,27 @@ import { query } from "./routes/query";
 const rpcHandler = new RPCHandler(appRouter, {
 	interceptors: [
 		onError((error) => {
-			logger.error(
-				error
-			);
+			logger.error(error);
 		}),
 	],
 });
 
 const app = new Elysia()
+	.use(
+		opentelemetry({
+			spanProcessors: [
+				new BatchSpanProcessor(
+					new OTLPTraceExporter({
+						url: "https://api.axiom.co/v1/traces",
+						headers: {
+							Authorization: `Bearer ${process.env.AXIOM_TOKEN}`,
+							"X-Axiom-Dataset": process.env.AXIOM_DATASET ?? "api",
+						},
+					})
+				),
+			],
+		})
+	)
 	.use(publicApi)
 	.use(
 		cors({
@@ -88,7 +104,7 @@ const app = new Elysia()
 			parse: "none",
 		}
 	)
-	.onError(({ error, code }) => {
+	.onError(function handleError({ error, code }) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		logger.error({ error, code }, errorMessage);
 

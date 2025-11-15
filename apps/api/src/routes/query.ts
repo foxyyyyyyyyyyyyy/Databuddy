@@ -1,6 +1,7 @@
 import { auth } from "@databuddy/auth";
 import { and, apikeyAccess, db, eq, isNull, websites } from "@databuddy/db";
 import { filterOptions } from "@databuddy/shared/lists/filters";
+import { record, setAttributes } from "@elysiajs/opentelemetry";
 import { Elysia, t } from "elysia";
 import { getApiKeyFromHeader, isApiKeyPresent } from "../lib/api-key";
 import { getCachedWebsiteDomain, getWebsiteDomain } from "../lib/website-utils";
@@ -16,7 +17,7 @@ import {
 
 // import { databuddy } from '../lib/databuddy';
 
-interface QueryParams {
+type QueryParams = {
 	start_date?: string;
 	startDate?: string;
 	end_date?: string;
@@ -98,9 +99,9 @@ async function getAccessibleWebsites(request: Request) {
 				? eq(websites.organizationId, apiKey.organizationId)
 				: apiKey.userId
 					? and(
-							eq(websites.userId, apiKey.userId),
-							isNull(websites.organizationId)
-						)
+						eq(websites.userId, apiKey.userId),
+						isNull(websites.organizationId)
+					)
 					: eq(websites.id, ""); // No matches if no user/org
 
 			return db
@@ -129,33 +130,37 @@ async function getAccessibleWebsites(request: Request) {
 }
 
 export const query = new Elysia({ prefix: "/v1/query" })
-	.get("/websites", async ({ request }: { request: Request }) => {
-		const authResult = await checkAuth(request);
-		if (authResult) {
-			return authResult;
-		}
+	.get("/websites", function getWebsites({ request }: { request: Request }) {
+		return record("getWebsites", async () => {
+			const authResult = await checkAuth(request);
+			if (authResult) {
+				setAttributes({ "auth.failed": true });
+				return authResult;
+			}
 
-		try {
-			const websites = await getAccessibleWebsites(request);
-			return {
-				success: true,
-				websites,
-				total: websites.length,
-			};
-		} catch (error) {
-			return new Response(
-				JSON.stringify({
-					success: false,
-					error:
-						error instanceof Error ? error.message : "Failed to fetch websites",
-					code: "INTERNAL_SERVER_ERROR",
-				}),
-				{
-					status: 500,
-					headers: { "Content-Type": "application/json" },
-				}
-			);
-		}
+			try {
+				const websites = await getAccessibleWebsites(request);
+				setAttributes({
+					"websites.count": websites.length,
+					"auth.method": isApiKeyPresent(request.headers) ? "api_key" : "session",
+				});
+				return {
+					success: true,
+					websites,
+					total: websites.length,
+				};
+			} catch (error) {
+				setAttributes({ "error": true });
+				return new Response(
+					JSON.stringify({
+						success: false,
+						error:
+							error instanceof Error ? error.message : "Failed to fetch websites",
+					}),
+					{ status: 500, headers: { "Content-Type": "application/json" } }
+				);
+			}
+		});
 	})
 	.get(
 		"/types",
@@ -238,70 +243,85 @@ export const query = new Elysia({ prefix: "/v1/query" })
 
 	.post(
 		"/",
-		async ({
+		function executeQuery({
 			body,
 			query: queryParams,
 		}: {
 			body: DynamicQueryRequestType | DynamicQueryRequestType[];
 			query: { website_id?: string; timezone?: string };
-		}) => {
-			const timezone = queryParams.timezone || "UTC";
+		}) {
+			return record("executeQuery", async () => {
+				const timezone = queryParams.timezone || "UTC";
+				const isBatch = Array.isArray(body);
 
-			try {
-				if (Array.isArray(body)) {
-					const uniqueWebsiteIds = [
-						...new Set(
-							body.flatMap((req) =>
-								req.parameters.map((param) =>
-									typeof param === "string" ? param : param.name
+				setAttributes({
+					"query.is_batch": isBatch,
+					"query.count": isBatch ? body.length : 1,
+					"query.website_id": queryParams.website_id || "unknown",
+					"query.timezone": timezone,
+				});
+
+				try {
+					if (isBatch) {
+						const uniqueWebsiteIds = [
+							...new Set(
+								body.flatMap((req) =>
+									req.parameters.map((param) =>
+										typeof param === "string" ? param : param.name
+									)
 								)
-							)
-						),
-					];
-					const domainCache = await getCachedWebsiteDomain(uniqueWebsiteIds);
+							),
+						];
+						const domainCache = await getCachedWebsiteDomain(uniqueWebsiteIds);
 
-					const results = await Promise.all(
-						body.map(async (queryRequest) => {
-							try {
-								return await executeDynamicQuery(
-									queryRequest,
-									{
-										...queryParams,
-										timezone,
-									},
-									domainCache
-								);
-							} catch (error) {
-								return {
-									success: false,
-									error:
-										error instanceof Error ? error.message : "Query failed",
-								};
-							}
-						})
-					);
+						setAttributes({
+							"query.batch.websites": uniqueWebsiteIds.length,
+						});
 
+						const results = await Promise.all(
+							body.map(async (queryRequest) => {
+								try {
+									return await executeDynamicQuery(
+										queryRequest,
+										{
+											...queryParams,
+											timezone,
+										},
+										domainCache
+									);
+								} catch (error) {
+									return {
+										success: false,
+										error:
+											error instanceof Error ? error.message : "Query failed",
+									};
+								}
+							})
+						);
+
+						return {
+							success: true,
+							batch: true,
+							results,
+						};
+					}
+
+					const result = await executeDynamicQuery(body, {
+						...queryParams,
+						timezone,
+					});
 					return {
 						success: true,
-						batch: true,
-						results,
+						...result,
+					};
+				} catch (error) {
+					setAttributes({ "error": true });
+					return {
+						success: false,
+						error: error instanceof Error ? error.message : "Query failed",
 					};
 				}
-
-				const result = await executeDynamicQuery(body, {
-					...queryParams,
-					timezone,
-				});
-				return {
-					success: true,
-					...result,
-				};
-			} catch (error) {
-				return {
-					success: false,
-					error: error instanceof Error ? error.message : "Query failed",
-				};
-			}
+			});
 		},
 		{
 			body: t.Union([
@@ -386,12 +406,12 @@ async function executeDynamicQuery(
 		parameterInput:
 			| string
 			| {
-					name: string;
-					start_date?: string;
-					end_date?: string;
-					granularity?: string;
-					id?: string;
-			  },
+				name: string;
+				start_date?: string;
+				end_date?: string;
+				granularity?: string;
+				id?: string;
+			},
 		dynamicRequest: DynamicQueryRequestType,
 		params: QueryParams,
 		siteId: string | undefined,

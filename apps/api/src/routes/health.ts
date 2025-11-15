@@ -35,7 +35,7 @@ const checkRedis = async () => {
 	}
 };
 
-export const health = new Elysia().get("/health", async () => {
+export const health = new Elysia().get("/health", async function healthCheck() {
 	const [clickhouse, database, redis] = await Promise.all([
 		checkClickhouse(),
 		checkDatabase(),
