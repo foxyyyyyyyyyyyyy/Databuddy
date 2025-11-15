@@ -23,11 +23,14 @@ async function _logBlockedTrafficAsync(
 				VALIDATION_LIMITS.STRING_MAX_LENGTH
 			) || "";
 
-		const { anonymizedIP, country, region, city } = await getGeo(ip);
-		const { browserName, browserVersion, osName, osVersion, deviceType } =
-			parseUserAgent(userAgent);
 
-		const now = Date.now();
+		const [geo, ua, now] = await Promise.all([
+			getGeo(ip),
+			parseUserAgent(userAgent),
+			Date.now(),
+		]);
+		const { anonymizedIP, country, region, city } = geo;
+		const { browserName, browserVersion, osName, osVersion, deviceType } = ua;
 
 		const blockedEvent: BlockedTraffic = {
 			id: randomUUID(),
