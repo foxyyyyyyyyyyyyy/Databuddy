@@ -2,11 +2,11 @@
 
 import {
 	BellIcon,
+	GearIcon,
 	IdentificationCardIcon,
 	KeyIcon,
 	ShieldCheckIcon,
 } from "@phosphor-icons/react";
-import { GearIcon } from "@phosphor-icons/react/dist/ssr";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -144,7 +144,7 @@ export default function SettingsPage() {
 	return (
 		<div className="flex h-full flex-col">
 			<PageHeader description={description} icon={icon} title={title} />
-			<main className="flex-1 overflow-y-auto p-4 sm:p-6">
+			<main className="flex-1 overflow-y-auto p-4">
 				{activeTab === "profile" && (
 					<Card className="shadow-sm">
 						<CardContent className="pt-6">
@@ -154,7 +154,7 @@ export default function SettingsPage() {
 				)}
 				{activeTab === "account" && (
 					<div className="space-y-6">
-						<Card className="shadow-sm">
+						<Card>
 							<CardHeader>
 								<CardTitle>Email Address</CardTitle>
 								<CardDescription>
@@ -166,7 +166,7 @@ export default function SettingsPage() {
 							</CardContent>
 						</Card>
 
-						<Card className="shadow-sm">
+						<Card>
 							<CardHeader>
 								<CardTitle>Password</CardTitle>
 								<CardDescription>
@@ -178,7 +178,7 @@ export default function SettingsPage() {
 							</CardContent>
 						</Card>
 
-						<Card className="shadow-sm">
+						<Card>
 							<CardHeader>
 								<CardTitle>Timezone</CardTitle>
 								<CardDescription>
@@ -190,11 +190,9 @@ export default function SettingsPage() {
 							</CardContent>
 						</Card>
 
-						<Card className="border-destructive/20 shadow-sm">
+						<Card>
 							<CardHeader>
-								<CardTitle className="text-destructive">
-									Delete Account
-								</CardTitle>
+								<CardTitle>Delete Account</CardTitle>
 								<CardDescription>
 									Permanently delete your account and all associated data. This
 									action cannot be undone.
