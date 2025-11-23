@@ -52,22 +52,12 @@ export type DatabuddyConfig = {
 	 */
 	debug?: boolean;
 
-	/**
-	 * Wait for user profile before sending events (advanced, default: false).
-	 */
-	waitForProfile?: boolean;
-
 	// --- Core Tracking Features ---
 
 	/**
 	 * Track hash changes in the URL (default: false).
 	 */
 	trackHashChanges?: boolean;
-
-	/**
-	 * Track user sessions (default: true).
-	 */
-	trackSessions?: boolean;
 
 	// --- Interaction Tracking ---
 
@@ -89,24 +79,9 @@ export type DatabuddyConfig = {
 	// --- Engagement Tracking ---
 
 	/**
-	 * Track user engagement metrics (default: false).
-	 */
-	trackEngagement?: boolean;
-
-	/**
 	 * Track scroll depth (default: false).
 	 */
 	trackScrollDepth?: boolean;
-
-	/**
-	 * Track exit intent (default: false).
-	 */
-	trackExitIntent?: boolean;
-
-	/**
-	 * Track bounce rate (default: false).
-	 */
-	trackBounceRate?: boolean;
 
 	// --- Performance Tracking ---
 
@@ -124,43 +99,6 @@ export type DatabuddyConfig = {
 	 * Track JavaScript errors (default: false).
 	 */
 	trackErrors?: boolean;
-
-	// --- Observability ---
-
-	/**
-	 * Enable observability features (logging, error tracking, tracing) (default: false).
-	 */
-	enableObservability?: boolean;
-
-	/**
-	 * Service name for observability events.
-	 */
-	observabilityService?: string;
-
-	/**
-	 * Environment for observability events.
-	 */
-	observabilityEnvironment?: string;
-
-	/**
-	 * Service version for observability events.
-	 */
-	observabilityVersion?: string;
-
-	/**
-	 * Enable structured logging (default: false).
-	 */
-	enableLogging?: boolean;
-
-	/**
-	 * Enable distributed tracing (default: false).
-	 */
-	enableTracing?: boolean;
-
-	/**
-	 * Enable error tracking (default: false).
-	 */
-	enableErrorTracking?: boolean;
 
 	// --- Optimization ---
 

@@ -13,7 +13,6 @@ export type TrackerOptions = {
 	trackOutgoingLinks?: boolean;
 	trackPerformance?: boolean;
 	trackWebVitals?: boolean;
-	trackEngagement?: boolean;
 	trackScrollDepth?: boolean;
 	trackInteractions?: boolean;
 	trackErrors?: boolean;
