@@ -30,18 +30,3 @@ export type PaymentMethod = {
 export type CustomerWithPaymentMethod = AutumnCustomer & {
     payment_method?: PaymentMethod;
 };
-
-export type InvoiceStatus =
-    | "paid"
-    | "open"
-    | "pending"
-    | "failed"
-    | "draft"
-    | "void";
-
-export type InvoiceStatusConfig = {
-    variant: "default" | "secondary" | "destructive" | "outline";
-    className: string;
-    text: string;
-};
-

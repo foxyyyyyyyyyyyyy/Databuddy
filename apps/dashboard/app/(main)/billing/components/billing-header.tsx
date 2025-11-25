@@ -3,7 +3,7 @@
 import { CreditCardIcon } from "@phosphor-icons/react";
 import { usePathname } from "next/navigation";
 
-const PAGE_TITLES = {
+const PAGE_TITLES: Record<string, { title: string; description: string }> = {
 	"/billing": {
 		title: "Usage & Metrics",
 		description: "Monitor your usage and billing metrics",
@@ -25,12 +25,11 @@ const DEFAULT_TITLE = {
 
 export function BillingHeader() {
 	const pathname = usePathname();
-	const { title, description } =
-		PAGE_TITLES[pathname as keyof typeof PAGE_TITLES] ?? DEFAULT_TITLE;
+	const { title, description } = PAGE_TITLES[pathname] ?? DEFAULT_TITLE;
 
 	return (
 		<div className="border-b bg-linear-to-r from-background via-background to-muted/20">
-			<div className="flex flex-col justify-between gap-3 p-4 sm:flex-row sm:items-center sm:gap-0 sm:px-6 sm:py-6">
+			<div className="flex h-24 items-center px-4 sm:px-6">
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-4">
 						<div className="rounded-xl border border-primary/20 bg-primary/10 p-3">

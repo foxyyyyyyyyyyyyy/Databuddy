@@ -200,15 +200,11 @@ function SubscriptionItem({ product }: { product: ProductStatus }) {
 			<div
 				className={cn(
 					"mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
-					isActive ? "bg-emerald-500/10" : "bg-muted"
+					isActive ? "bg-primary/10" : "bg-muted"
 				)}
 			>
 				{isActive ? (
-					<CheckCircleIcon
-						className="text-emerald-500"
-						size={14}
-						weight="fill"
-					/>
+					<CheckCircleIcon className="text-primary" size={14} weight="fill" />
 				) : (
 					<ClockIcon className="text-muted-foreground" size={14} />
 				)}
@@ -219,10 +215,7 @@ function SubscriptionItem({ product }: { product: ProductStatus }) {
 						{product.name || product.id}
 					</span>
 					{isActive && (
-						<Badge
-							className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-							variant="secondary"
-						>
+						<Badge className="bg-primary/10 text-primary" variant="secondary">
 							Active
 						</Badge>
 					)}
@@ -296,13 +289,15 @@ function BillingSummary({ invoices }: { invoices: CustomerInvoice[] }) {
 function EmptyInvoices() {
 	return (
 		<div className="flex flex-col items-center justify-center py-16 text-center">
-			<ReceiptIcon
-				className="mb-3 text-muted-foreground"
-				size={32}
-				weight="duotone"
-			/>
-			<p className="font-medium">No invoices yet</p>
-			<p className="text-muted-foreground text-sm">
+			<div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+				<ReceiptIcon
+					className="text-muted-foreground"
+					size={24}
+					weight="duotone"
+				/>
+			</div>
+			<p className="font-semibold">No invoices yet</p>
+			<p className="mt-1 max-w-xs text-muted-foreground text-sm">
 				Invoices will appear here after your first payment
 			</p>
 		</div>
