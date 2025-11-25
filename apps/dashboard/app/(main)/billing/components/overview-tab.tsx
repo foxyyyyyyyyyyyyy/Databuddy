@@ -23,12 +23,12 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePersistentState } from "@/hooks/use-persistent-state";
 import { cn } from "@/lib/utils";
+import { useBilling, useBillingData } from "../hooks/use-billing";
 import {
 	type FeatureUsage,
-	useBilling,
-	useBillingData,
-} from "../hooks/use-billing";
-import { formatCompactNumber, getResetText } from "../utils/feature-usage";
+	formatCompactNumber,
+	getResetText,
+} from "../utils/feature-usage";
 import { CancelSubscriptionDialog } from "./cancel-subscription-dialog";
 
 type OverviewTabProps = {

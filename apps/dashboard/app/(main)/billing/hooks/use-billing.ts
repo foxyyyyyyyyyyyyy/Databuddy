@@ -9,7 +9,6 @@ import {
 	type FeatureUsage,
 } from "../utils/feature-usage";
 
-export type { FeatureUsage };
 
 export type Usage = {
 	features: FeatureUsage[];
