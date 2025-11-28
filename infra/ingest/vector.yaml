@@ -20,6 +20,13 @@ sources:
     decoding:
       codec: json
 
+  redpanda_metrics:
+    type: prometheus_scrape
+    endpoints:
+      - "${REDPANDA_METRICS_ENDPOINT}"
+    scrape_interval_secs: 15
+    scrape_timeout_secs: 5
+
 transforms:
   route_analytics:
     type: route
@@ -33,6 +40,14 @@ transforms:
       outgoing_links: '.topic == "analytics-outgoing-links"'
       email_events: '.topic == "analytics-email-events"'
       blocked_traffic: '.topic == "analytics-blocked-traffic"'
+
+  redpanda_metrics_transform:
+    type: remap
+    inputs:
+      - redpanda_metrics
+    source: |
+      .tags.cluster = "${REDPANDA_CLUSTER_NAME}"
+      .tags.env = "${ENVIRONMENT}"
 
 sinks:
   clickhouse_events:
@@ -182,3 +197,11 @@ sinks:
     path: /var/log/vector/dead_letters.log
     encoding:
       codec: json
+
+  axiom_redpanda_metrics:
+    type: axiom
+    inputs:
+      - redpanda_metrics_transform
+    dataset: "${AXIOM_DATASET}"
+    token: "${AXIOM_TOKEN}"
+    compression: gzip
