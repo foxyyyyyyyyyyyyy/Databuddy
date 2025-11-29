@@ -104,7 +104,7 @@ export function CategorySidebar({
 										isActive && !isLast && "border-accent",
 										"relative flex h-10 w-full items-center justify-center transition-colors duration-200",
 										"focus:outline-none",
-										!isActive && "hover:bg-accent",
+										!isActive && "hover:bg-sidebar-accent-brighter",
 										isLast
 											? "box-content border-border border-b"
 											: "box-content border-transparent"
