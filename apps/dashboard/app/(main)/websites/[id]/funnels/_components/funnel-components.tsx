@@ -10,12 +10,14 @@ export const AutocompleteInput = memo(
 		suggestions,
 		placeholder,
 		className,
+		inputClassName,
 	}: {
 		value: string;
 		onValueChange: (value: string) => void;
 		suggestions: string[];
 		placeholder?: string;
 		className?: string;
+		inputClassName?: string;
 	}) => {
 		const [isOpen, setIsOpen] = useState(false);
 		const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
@@ -71,9 +73,9 @@ export const AutocompleteInput = memo(
 		};
 
 		return (
-			<div className="relative" ref={containerRef}>
+			<div className={`relative ${className || ""}`} ref={containerRef}>
 				<Input
-					className={className}
+					className={inputClassName}
 					placeholder={placeholder}
 					value={value || ""}
 					onChange={(e) => handleInputChange(e.target.value)}
