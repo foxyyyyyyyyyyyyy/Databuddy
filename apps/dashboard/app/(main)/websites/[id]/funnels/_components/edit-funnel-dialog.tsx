@@ -35,7 +35,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
-import { operatorOptions, useFilters } from "@/hooks/use-filters";
+import { goalFunnelOperatorOptions, useFilters } from "@/hooks/use-filters";
 import type {
 	AutocompleteData,
 	CreateFunnelData,
@@ -78,9 +78,14 @@ export function EditFunnelDialog({
 
 	useEffect(() => {
 		if (funnel) {
+			// Ensure all filters have valid operators (default to "equals" if missing)
+			const sanitizedFilters = (funnel.filters || []).map((f) => ({
+				...f,
+				operator: f.operator || "equals",
+			}));
 			setFormData({
 				...funnel,
-				filters: funnel.filters || [],
+				filters: sanitizedFilters,
 				ignoreHistoricData: funnel.ignoreHistoricData ?? false,
 			});
 		} else {
@@ -104,18 +109,27 @@ export function EditFunnelDialog({
 	const handleSubmit = async () => {
 		if (!formData) return;
 
+		// Ensure all filters have valid operators (default to "equals" if missing)
+		const sanitizedFilters = (formData.filters || []).map((f) => ({
+			...f,
+			operator: f.operator || "equals",
+		}));
+
 		if (isCreateMode && onCreate) {
 			const createData: CreateFunnelData = {
 				name: formData.name,
 				description: formData.description || undefined,
 				steps: formData.steps,
-				filters: formData.filters || [],
+				filters: sanitizedFilters,
 				ignoreHistoricData: formData.ignoreHistoricData,
 			};
 			await onCreate(createData);
 			resetForm();
 		} else {
-			await onSubmit(formData);
+			await onSubmit({
+				...formData,
+				filters: sanitizedFilters,
+			});
 		}
 	};
 
@@ -497,16 +511,16 @@ export function EditFunnelDialog({
 											</Select>
 
 											<Select
-												value={filter.operator}
+												value={filter.operator || "equals"}
 												onValueChange={(value) =>
 													updateFilter(index, "operator", value)
 												}
 											>
 												<SelectTrigger className="h-8 w-24 text-xs">
-													<SelectValue />
+													<SelectValue placeholder="equals" />
 												</SelectTrigger>
 												<SelectContent>
-													{operatorOptions.map((option) => (
+													{goalFunnelOperatorOptions.map((option) => (
 														<SelectItem key={option.value} value={option.value}>
 															{option.label}
 														</SelectItem>
