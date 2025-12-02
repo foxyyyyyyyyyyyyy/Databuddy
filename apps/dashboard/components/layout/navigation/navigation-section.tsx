@@ -125,10 +125,10 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 			<button
 				className={clsx(
 					className,
-					"flex h-10 items-center gap-3 border-b px-3 text-left font-medium text-sidebar-foreground text-sm focus:outline-none",
+					"flex h-10 items-center gap-3 px-3 text-left font-medium text-sidebar-foreground text-sm focus:outline-none",
 					isExpanded
-						? "border-b bg-sidebar-accent-brighter"
-						: "hover:bg-sidebar-accent-brighter"
+						? "border-sidebar-border border-b bg-sidebar-accent-brighter"
+						: "border-sidebar-border border-b hover:bg-sidebar-accent-brighter"
 				)}
 				data-section={title}
 				data-track="navigation-section-toggle"
@@ -154,7 +154,7 @@ export const NavigationSection = memo(function NavigationSectionComponent({
 					{isExpanded && (
 						<motion.div
 							animate={{ opacity: 1, height: "auto" }}
-							className="overflow-hidden"
+							className="overflow-hidden pt-px"
 							exit={{ opacity: 0, height: 0 }}
 							initial={{ opacity: 0, height: 0 }}
 						>

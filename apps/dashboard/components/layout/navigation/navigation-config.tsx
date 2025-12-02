@@ -125,11 +125,25 @@ export const personalNavigation: NavigationSection[] = [
 	createNavSection("Personal", UserGearIcon, [
 		createNavItem("Account", IdentificationCardIcon, "/settings/account"),
 		createNavItem("Appearance", EyeIcon, "/settings/appearance"),
-		createNavItem("Privacy & Data", ShieldCheckIcon, "/settings/privacy"),
+		createNavItem("Privacy & Data", ShieldCheckIcon, "/settings/privacy", {
+			disabled: true,
+			tag: "soon",
+		}),
 	]),
 	createNavSection("Preferences", GearIcon, [
-		createNavItem("Analytics Behavior", ChartLineUpIcon, "/settings/analytics"),
-		createNavItem("Feature Access", FlagIcon, "/settings/features"),
+		createNavItem(
+			"Analytics Behavior",
+			ChartLineUpIcon,
+			"/settings/analytics",
+			{
+				disabled: true,
+				tag: "soon",
+			}
+		),
+		createNavItem("Feature Access", FlagIcon, "/settings/features", {
+			disabled: true,
+			tag: "soon",
+		}),
 		createNavItem("Integrations", PlugIcon, "/settings/integrations", {
 			disabled: true,
 			tag: "soon",
