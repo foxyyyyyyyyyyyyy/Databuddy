@@ -95,6 +95,11 @@ export function NavigationItem({
 				)}
 			>
 				{content}
+				{tag && (
+					<span className="font-mono text-sidebar-foreground/30 text-xs uppercase">
+						{tag}
+					</span>
+				)}
 			</div>
 		);
 	}
