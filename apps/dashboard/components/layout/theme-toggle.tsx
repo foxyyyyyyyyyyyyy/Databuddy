@@ -2,6 +2,7 @@
 
 import { MonitorIcon, MoonIcon, SunIcon } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
+import { useHotkeys } from "react-hotkeys-hook";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,15 @@ export function ThemeToggle({ className }: ThemeTogglerProps) {
 			setTheme(nextTheme);
 		});
 	};
+
+	useHotkeys(
+		"mod+d",
+		() => {
+			switchTheme();
+		},
+		{ preventDefault: true },
+		[currentTheme]
+	);
 
 	return (
 		<Button

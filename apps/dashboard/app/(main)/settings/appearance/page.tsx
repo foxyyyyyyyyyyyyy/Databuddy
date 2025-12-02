@@ -22,6 +22,7 @@ import type {
 import { StatCard } from "@/components/analytics/stat-card";
 import { RightSidebar } from "@/components/right-sidebar";
 import { Button } from "@/components/ui/button";
+import { KeyboardShortcuts } from "@/components/ui/keyboard-shortcuts";
 import {
 	Select,
 	SelectContent,
@@ -437,23 +438,8 @@ export default function AppearanceSettingsPage() {
 					</div>
 				</RightSidebar.Section>
 
-				<RightSidebar.Section border title="Shortcuts">
-					<div className="space-y-2">
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground text-sm">
-								Toggle theme
-							</span>
-							<kbd className="rounded border bg-secondary px-1.5 py-0.5 font-mono text-xs">
-								⌘D
-							</kbd>
-						</div>
-						<div className="flex items-center justify-between">
-							<span className="text-muted-foreground text-sm">Search</span>
-							<kbd className="rounded border bg-secondary px-1.5 py-0.5 font-mono text-xs">
-								⌘K
-							</kbd>
-						</div>
-					</div>
+				<RightSidebar.Section border title="Keyboard Shortcuts">
+					<KeyboardShortcuts compact />
 				</RightSidebar.Section>
 			</RightSidebar>
 		</div>

@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import { useCallback, useMemo } from "react";
 import type { DateRange as DayPickerRange } from "react-day-picker";
+import { useHotkeys } from "react-hotkeys-hook";
 import { LiveUserIndicator } from "@/components/analytics";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { Button } from "@/components/ui/button";
@@ -114,6 +115,22 @@ export function AnalyticsToolbar({
 			);
 		},
 		[selectedRange]
+	);
+
+	useHotkeys(
+		["1", "2", "3", "4", "5", "6"],
+		(e) => {
+			if (isDisabled) {
+				return;
+			}
+			const index = Number.parseInt(e.key, 10) - 1;
+			if (index >= 0 && index < QUICK_RANGES.length) {
+				e.preventDefault();
+				handleQuickRangeSelect(QUICK_RANGES[index]);
+			}
+		},
+		{ preventDefault: true, enabled: !isDisabled },
+		[isDisabled, handleQuickRangeSelect]
 	);
 
 	return (

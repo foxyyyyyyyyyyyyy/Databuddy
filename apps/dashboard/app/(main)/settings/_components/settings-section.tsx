@@ -1,4 +1,5 @@
 import { CircleNotchIcon } from "@phosphor-icons/react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -96,6 +97,29 @@ export function UnsavedChangesFooter({
 	saveLabel = "Save Changes",
 	message = "You have unsaved changes",
 }: UnsavedChangesFooterProps) {
+	useHotkeys(
+		"mod+s",
+		(e) => {
+			if (hasChanges && !isSaving) {
+				e.preventDefault();
+				onSave();
+			}
+		},
+		{ preventDefault: true, enabled: hasChanges && !isSaving },
+		[hasChanges, isSaving, onSave]
+	);
+
+	useHotkeys(
+		"escape",
+		() => {
+			if (hasChanges && !isSaving && onDiscard) {
+				onDiscard();
+			}
+		},
+		{ enabled: hasChanges && !isSaving && Boolean(onDiscard) },
+		[hasChanges, isSaving, onDiscard]
+	);
+
 	if (!(hasChanges || isSaving)) {
 		return null;
 	}

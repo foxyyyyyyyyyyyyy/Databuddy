@@ -7,6 +7,7 @@ import {
 	TrendUpIcon,
 } from "@phosphor-icons/react";
 import { useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -20,33 +21,33 @@ import { WebsiteCard } from "./_components/website-card";
 
 function LoadingSkeleton() {
 	return (
-			<div className="grid select-none gap-6 sm:grid-cols-2 lg:grid-cols-3">
-				{[1, 2, 3, 4, 5, 6].map((num) => (
-					<Card
-						className="animate-pulse overflow-hidden pt-0"
-						key={`website-skeleton-${num}`}
-					>
-						<CardHeader className="dotted-bg gap-0! border-b bg-accent px-3 pt-4 pb-0!">
-							<Skeleton className="mx-auto h-24 w-full rounded sm:h-28" />
-						</CardHeader>
-						<CardContent className="px-4 py-3">
-							<div className="flex items-center gap-3">
-								<Skeleton className="size-7 shrink-0 rounded" />
-								<div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-									<div className="flex flex-col gap-1">
-										<Skeleton className="h-3.5 w-24 rounded" />
-										<Skeleton className="h-3 w-32 rounded" />
-									</div>
-									<div className="flex flex-col items-end gap-1">
-										<Skeleton className="h-3 w-12 rounded" />
-										<Skeleton className="h-2.5 w-8 rounded" />
-									</div>
+		<div className="grid select-none gap-6 sm:grid-cols-2 lg:grid-cols-3">
+			{[1, 2, 3, 4, 5, 6].map((num) => (
+				<Card
+					className="animate-pulse overflow-hidden pt-0"
+					key={`website-skeleton-${num}`}
+				>
+					<CardHeader className="dotted-bg gap-0! border-b bg-accent px-3 pt-4 pb-0!">
+						<Skeleton className="mx-auto h-24 w-full rounded sm:h-28" />
+					</CardHeader>
+					<CardContent className="px-4 py-3">
+						<div className="flex items-center gap-3">
+							<Skeleton className="size-7 shrink-0 rounded" />
+							<div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+								<div className="flex flex-col gap-1">
+									<Skeleton className="h-3.5 w-24 rounded" />
+									<Skeleton className="h-3 w-32 rounded" />
+								</div>
+								<div className="flex flex-col items-end gap-1">
+									<Skeleton className="h-3 w-12 rounded" />
+									<Skeleton className="h-2.5 w-8 rounded" />
 								</div>
 							</div>
-						</CardContent>
-					</Card>
-				))}
-			</div>
+						</div>
+					</CardContent>
+				</Card>
+			))}
+		</div>
 	);
 }
 
@@ -62,6 +63,34 @@ export default function WebsitesPage() {
 		isFetching,
 		refetch,
 	} = useWebsites();
+
+	const canCreateWebsite = !dialogOpen;
+	const isLoadingOrFetching = isLoading || isFetching;
+	const canRefresh = !isLoadingOrFetching;
+
+	useHotkeys(
+		"mod+n",
+		(e) => {
+			if (canCreateWebsite) {
+				e.preventDefault();
+				setDialogOpen(true);
+			}
+		},
+		{ preventDefault: true, enabled: canCreateWebsite },
+		[canCreateWebsite]
+	);
+
+	useHotkeys(
+		"mod+shift+r",
+		(e) => {
+			if (canRefresh) {
+				e.preventDefault();
+				refetch();
+			}
+		},
+		{ preventDefault: true, enabled: canRefresh },
+		[canRefresh, refetch]
+	);
 
 	return (
 		<div className="flex h-full flex-col">
