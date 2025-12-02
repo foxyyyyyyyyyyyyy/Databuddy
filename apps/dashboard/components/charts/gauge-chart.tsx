@@ -1,17 +1,8 @@
 "use client";
 
-import { memo } from "react";
-import {
-	Label,
-	PolarGrid,
-	PolarRadiusAxis,
-	RadialBar,
-	RadialBarChart,
-} from "recharts";
-import {
-	type ChartConfig,
-	ChartContainer,
-} from "@/components/ui/chart";
+import type { ReactNode } from "react";
+import { memo, useCallback, useLayoutEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 type GaugeRating = "good" | "needs-improvement" | "poor";
 
@@ -28,13 +19,18 @@ type GaugeChartProps = {
 	formatValue?: (value: number) => string;
 	/** Optional unit to display below the value */
 	unit?: string;
+	/** Number of tick marks */
+	tickCount?: number;
+	/** Starting angle in degrees (0 = top, 90 = right) */
+	startAngle?: number;
+	/** Sweep angle in degrees */
+	sweepAngle?: number;
 };
 
-// Direct hex colors that match the theme
-const RATING_COLORS: Record<GaugeRating, string> = {
-	good: "#10b981", // emerald-500
-	"needs-improvement": "#f59e0b", // amber-500
-	poor: "#ef4444", // red-500
+const RATING_COLORS: Record<GaugeRating, { base: string; glow: string }> = {
+	good: { base: "#10b981", glow: "rgba(16, 185, 129, 0.5)" },
+	"needs-improvement": { base: "#f59e0b", glow: "rgba(245, 158, 11, 0.5)" },
+	poor: { base: "#ef4444", glow: "rgba(239, 68, 68, 0.5)" },
 };
 
 export const GaugeChart = memo(function GaugeChart({
@@ -44,102 +40,158 @@ export const GaugeChart = memo(function GaugeChart({
 	size = 120,
 	formatValue,
 	unit,
+	tickCount = 36,
+	startAngle = -135,
+	sweepAngle = 270,
 }: GaugeChartProps) {
-	// Calculate the end angle based on progress (0-360 degrees)
 	const progress = Math.max(0, Math.min(value / max, 1));
-	const endAngle = progress * 360;
+	const targetActiveTicks = Math.floor(progress * tickCount);
+
+	const [activeTicks, setActiveTicks] = useState(0);
+	const animationRef = useRef<number | null>(null);
+	const currentTicksRef = useRef(0);
+
+	const animateToTarget = useCallback((target: number) => {
+		if (animationRef.current !== null) {
+			cancelAnimationFrame(animationRef.current);
+		}
+
+		const animate = () => {
+			const current = currentTicksRef.current;
+			if (current === target) {
+				animationRef.current = null;
+				return;
+			}
+
+			const step = target > current ? 1 : -1;
+			currentTicksRef.current = current + step;
+			setActiveTicks(currentTicksRef.current);
+
+			animationRef.current = requestAnimationFrame(() => {
+				setTimeout(animate, 15);
+			});
+		};
+
+		animate();
+	}, []);
+
+	useLayoutEffect(() => {
+		animateToTarget(targetActiveTicks);
+		return () => {
+			if (animationRef.current !== null) {
+				cancelAnimationFrame(animationRef.current);
+			}
+		};
+	}, [targetActiveTicks, animateToTarget]);
 
 	const displayValue = formatValue
 		? formatValue(value)
 		: Math.round(value).toString();
 
-	const fillColor = RATING_COLORS[rating];
+	const colors = RATING_COLORS[rating];
 
-	const chartData = [
-		{
-			name: "value",
-			value: value,
-			fill: fillColor,
-		},
-	];
+	const padding = 8;
+	const cx = size / 2;
+	const cy = size / 2;
+	const radius = size / 2 - padding;
+	const tickLength = size * 0.12;
+	const tickWidth = Math.max(2, size * 0.025);
 
-	const chartConfig = {
-		value: {
-			label: "Value",
-			color: fillColor,
-		},
-	} satisfies ChartConfig;
+	const ticks: ReactNode[] = [];
+	for (let i = 0; i < tickCount; i++) {
+		const t = tickCount > 1 ? i / (tickCount - 1) : 0;
+		const angle = startAngle + t * sweepAngle;
+		const angleRad = (angle * Math.PI) / 180;
 
-	// Scale radii based on size
-	const outerRadius = Math.round(size * 0.45);
-	const innerRadius = Math.round(size * 0.33);
-	const polarRadius1 = Math.round(innerRadius + (outerRadius - innerRadius) * 0.7);
-	const polarRadius2 = Math.round(innerRadius + (outerRadius - innerRadius) * 0.3);
+		const x1 = cx + (radius - tickLength) * Math.cos(angleRad);
+		const y1 = cy + (radius - tickLength) * Math.sin(angleRad);
+		const x2 = cx + radius * Math.cos(angleRad);
+		const y2 = cy + radius * Math.sin(angleRad);
+
+		const isActive = i < activeTicks;
+
+		ticks.push(
+			<line
+				className={cn(
+					"transition-opacity duration-100",
+					isActive && "drop-shadow-sm"
+				)}
+				key={i}
+				stroke={isActive ? colors.base : "hsl(var(--muted))"}
+				strokeLinecap="round"
+				strokeOpacity={isActive ? 1 : 0.4}
+				strokeWidth={tickWidth}
+				style={{
+					filter: isActive ? `drop-shadow(0 0 3px ${colors.glow})` : undefined,
+				}}
+				x1={x1}
+				x2={x2}
+				y1={y1}
+				y2={y2}
+			/>
+		);
+	}
+
+	// Dynamic font sizing based on text length to prevent overflow
+	const innerRadius = radius - tickLength - 4;
+	const maxTextWidth = innerRadius * 1.4;
+	const charCount = displayValue.length + (unit ? unit.length * 0.6 : 0);
+	const baseFontSize = size * 0.22;
+	const scaledFontSize = Math.min(
+		baseFontSize,
+		maxTextWidth / (charCount * 0.55)
+	);
+	const valueFontSize = Math.round(Math.max(12, scaledFontSize));
+	const unitFontSize = Math.round(valueFontSize * 0.5);
 
 	return (
-		<ChartContainer
-			className="mx-auto aspect-square"
-			config={chartConfig}
-			style={{ height: size, width: size }}
+		<div
+			className="relative flex items-center justify-center"
+			style={{ width: size, height: size }}
 		>
-			<RadialBarChart
-				data={chartData}
-				endAngle={endAngle}
-				innerRadius={innerRadius}
-				outerRadius={outerRadius}
-				startAngle={0}
+			<svg
+				className="absolute inset-0"
+				height={size}
+				viewBox={`0 0 ${size} ${size}`}
+				width={size}
 			>
-				<PolarGrid
-					className="first:fill-muted last:fill-background"
-					gridType="circle"
-					polarRadius={[polarRadius1, polarRadius2]}
-					radialLines={false}
-					stroke="none"
-				/>
-				<RadialBar
-					background
-					cornerRadius={10}
-					dataKey="value"
-				/>
-				<PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
-					<Label
-						content={({ viewBox }) => {
-							if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-								return (
-									<text
-										dominantBaseline="middle"
-										textAnchor="middle"
-										x={viewBox.cx}
-										y={viewBox.cy}
-									>
-										<tspan
-											fill="var(--foreground)"
-											fontSize="18"
-											fontWeight="600"
-											x={viewBox.cx}
-											y={unit ? (viewBox.cy ?? 0) - 6 : viewBox.cy}
-										>
-											{displayValue}
-										</tspan>
-										{unit && (
-											<tspan
-												fill="var(--muted-foreground)"
-												fontSize="10"
-												x={viewBox.cx}
-												y={(viewBox.cy ?? 0) + 10}
-											>
-												{unit}
-											</tspan>
-										)}
-									</text>
-								);
-							}
-							return null;
-						}}
-					/>
-				</PolarRadiusAxis>
-			</RadialBarChart>
-		</ChartContainer>
+				<title>
+					Gauge chart showing {displayValue} {unit}
+				</title>
+				<defs>
+					<filter
+						height="200%"
+						id={`glow-${rating}`}
+						width="200%"
+						x="-50%"
+						y="-50%"
+					>
+						<feGaussianBlur result="coloredBlur" stdDeviation="2" />
+						<feMerge>
+							<feMergeNode in="coloredBlur" />
+							<feMergeNode in="SourceGraphic" />
+						</feMerge>
+					</filter>
+				</defs>
+				{ticks}
+			</svg>
+			<div className="relative z-10 flex items-baseline justify-center gap-0.5">
+				<span
+					className="font-semibold text-foreground tabular-nums tracking-tight"
+					style={{ fontSize: valueFontSize, lineHeight: 1 }}
+				>
+					{displayValue}
+				</span>
+				{unit ? (
+					<span
+						className="text-muted-foreground"
+						style={{ fontSize: unitFontSize, lineHeight: 1 }}
+					>
+						{unit}
+					</span>
+				) : null}
+			</div>
+		</div>
 	);
 });
 
