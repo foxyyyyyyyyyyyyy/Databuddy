@@ -11,6 +11,7 @@ import { goalsRouter } from "./routers/goals";
 import { miniChartsRouter } from "./routers/mini-charts";
 import { organizationsRouter } from "./routers/organizations";
 import { preferencesRouter } from "./routers/preferences";
+import { ssoRouter } from "./routers/sso";
 import { websitesRouter } from "./routers/websites";
 
 export const appRouter = {
@@ -28,6 +29,7 @@ export const appRouter = {
 	organizations: organizationsRouter,
 	billing: billingRouter,
 	export: exportRouter,
+	sso: ssoRouter,
 };
 
 export type AppRouter = typeof appRouter;

@@ -202,7 +202,7 @@ export function Sidebar() {
 				/>
 			</div>
 
-			{isMobileOpen && (
+			{isMobileOpen ? (
 				<button
 					className="fixed inset-0 z-[90] bg-black/20 md:hidden"
 					onClick={closeSidebar}
@@ -214,7 +214,7 @@ export function Sidebar() {
 					tabIndex={0}
 					type="button"
 				/>
-			)}
+			) : null}
 
 			<nav
 				aria-hidden={!isMobileOpen}
